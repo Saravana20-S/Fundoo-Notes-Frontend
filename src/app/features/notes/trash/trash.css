@@ -1,0 +1,446 @@
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.trash-page {
+  width: 100%;
+  min-height: 100%;
+
+  padding: 28px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.trash-header {
+  max-width: 1200px;
+
+  margin: 0 auto 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+}
+
+.header-left h1 {
+  margin: 0;
+
+  font-size: 25px;
+
+  font-weight: 500;
+
+  color: #202124;
+}
+
+.header-left p {
+  margin: 5px 0 0;
+
+  color: #5f6368;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.back-button {
+  width: 42px;
+
+  height: 42px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  font-size: 24px;
+
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background: #f1f3f4;
+}
+
+/* =========================================================
+   EMPTY TRASH
+   ========================================================= */
+
+.empty-trash-button {
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 10px 16px;
+
+  background: #fce8e6;
+
+  color: #c5221f;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.empty-trash-button:hover {
+  background: #f8d7d4;
+}
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.trash-grid {
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  column-width: 250px;
+
+  column-gap: 17px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.trash-card {
+  width: 100%;
+
+  display: inline-block;
+
+  vertical-align: top;
+
+  box-sizing: border-box;
+
+  margin-bottom: 17px;
+
+  padding: 18px;
+
+  background: #fff;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 10px;
+
+  break-inside: avoid;
+
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12);
+
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.trash-card:hover {
+  box-shadow: 0 3px 10px rgba(60, 64, 67, 0.2);
+}
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
+
+.card-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+.card-header h2 {
+  margin: 0;
+
+  flex: 1;
+
+  font-size: 16px;
+
+  line-height: 1.4;
+
+  font-weight: 500;
+
+  color: #202124;
+
+  overflow-wrap: anywhere;
+}
+
+.trash-badge {
+  flex-shrink: 0;
+
+  padding: 4px 8px;
+
+  border-radius: 12px;
+
+  background: #f1f3f4;
+
+  color: #5f6368;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.note-content {
+  margin: 0 0 16px;
+
+  color: #3c4043;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.note-date {
+  margin-bottom: 15px;
+
+  color: #80868b;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.card-actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border-top: 1px solid #f1f3f4;
+
+  padding-top: 12px;
+}
+
+.card-actions button {
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 8px 10px;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.restore-button {
+  background: #e8f0fe;
+
+  color: #1967d2;
+}
+
+.restore-button:hover {
+  background: #d2e3fc;
+}
+
+.delete-button {
+  background: #fce8e6;
+
+  color: #c5221f;
+}
+
+.delete-button:hover {
+  background: #f8d7d4;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.error-message {
+  max-width: 700px;
+
+  margin: 0 auto 20px;
+
+  padding: 12px 16px;
+
+  border-radius: 6px;
+
+  background: #fce8e6;
+
+  color: #c5221f;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.loading-container {
+  min-height: 300px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  color: #5f6368;
+}
+
+.loading-spinner {
+  width: 28px;
+
+  height: 28px;
+
+  border: 3px solid #e0e0e0;
+
+  border-top-color: #5f6368;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.empty-trash {
+  min-height: 350px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 70px;
+
+  opacity: 0.45;
+
+  margin-bottom: 12px;
+}
+
+.empty-trash h2 {
+  margin: 0 0 8px;
+
+  font-size: 20px;
+
+  font-weight: 500;
+
+  color: #5f6368;
+}
+
+.empty-trash p {
+  margin: 0 0 20px;
+
+  font-size: 14px;
+
+  color: #80868b;
+}
+
+.back-to-notes {
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 10px 18px;
+
+  background: #f1f3f4;
+
+  color: #202124;
+
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+.back-to-notes:hover {
+  background: #e8eaed;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .trash-page {
+    padding: 18px;
+  }
+
+  .trash-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .empty-trash-button {
+    align-self: flex-start;
+  }
+
+  .trash-grid {
+    column-width: 100%;
+  }
+
+  .card-actions {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .card-actions button {
+    width: 100%;
+  }
+}

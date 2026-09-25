@@ -1,0 +1,287 @@
+<div class="register-page">
+  <div class="register-card">
+    <!-- =========================================
+         LEFT SIDE - REGISTRATION FORM
+         ========================================= -->
+    <section class="register-form-section">
+      <!-- FundooNotes Logo -->
+      <div class="logo">
+        <span class="logo-f">F</span>
+        <span class="logo-u">u</span>
+        <span class="logo-n">n</span>
+        <span class="logo-d">d</span>
+        <span class="logo-o">o</span>
+        <span class="logo-o2">o</span>
+        <span class="logo-n2">N</span>
+        <span class="logo-o3">o</span>
+        <span class="logo-t">t</span>
+        <span class="logo-e">e</span>
+        <span class="logo-s">s</span>
+      </div>
+
+      <!-- Header -->
+      <div class="form-header">
+        <h1>Create your FundooNotes Account</h1>
+
+        <p>Enter your details to get started</p>
+      </div>
+
+      <!-- Server Error -->
+      @if (errorMessage) {
+        <div class="server-error">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <!-- Server Success -->
+      @if (successMessage) {
+        <div class="server-success">
+          {{ successMessage }}
+        </div>
+      }
+
+      <!-- Registration Form -->
+      <form #registerForm="ngForm" (ngSubmit)="onRegister()" novalidate class="register-form">
+        <!-- =========================================
+             FIRST NAME + LAST NAME
+             ========================================= -->
+
+        <div class="name-row">
+          <!-- First Name -->
+          <div class="form-group">
+            <input
+              id="firstName"
+              type="text"
+              name="firstName"
+              [(ngModel)]="firstName"
+              #firstNameInput="ngModel"
+              required
+              minlength="2"
+              placeholder="First name*"
+              autocomplete="given-name"
+            />
+
+            @if (firstNameInput.invalid && firstNameInput.touched) {
+              <div class="error-message">
+                @if (firstNameInput.errors?.['required']) {
+                  <span>First name is required.</span>
+                }
+
+                @if (firstNameInput.errors?.['minlength']) {
+                  <span>Minimum 2 characters.</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-group">
+            <input
+              id="lastName"
+              type="text"
+              name="lastName"
+              [(ngModel)]="lastName"
+              #lastNameInput="ngModel"
+              required
+              minlength="2"
+              placeholder="Last name*"
+              autocomplete="family-name"
+            />
+
+            @if (lastNameInput.invalid && lastNameInput.touched) {
+              <div class="error-message">
+                @if (lastNameInput.errors?.['required']) {
+                  <span>Last name is required.</span>
+                }
+
+                @if (lastNameInput.errors?.['minlength']) {
+                  <span>Minimum 2 characters.</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- =========================================
+             EMAIL
+             ========================================= -->
+
+        <div class="form-group">
+          <input
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            #emailInput="ngModel"
+            required
+            email
+            placeholder="Email*"
+            autocomplete="email"
+          />
+
+          <div class="input-helper">You can use your email to login to FundooNotes</div>
+
+          @if (emailInput.invalid && emailInput.touched) {
+            <div class="error-message">
+              @if (emailInput.errors?.['required']) {
+                <span>Email is required.</span>
+              }
+
+              @if (emailInput.errors?.['email']) {
+                <span>Enter a valid email address.</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- =========================================
+             MOBILE
+             ========================================= -->
+
+        <div class="form-group">
+          <input
+            id="mobile"
+            type="tel"
+            name="mobile"
+            [(ngModel)]="mobile"
+            #mobileInput="ngModel"
+            required
+            pattern="^[0-9]{10}$"
+            maxlength="10"
+            placeholder="Mobile number*"
+            autocomplete="tel"
+          />
+
+          @if (mobileInput.invalid && mobileInput.touched) {
+            <div class="error-message">
+              @if (mobileInput.errors?.['required']) {
+                <span>Mobile number is required.</span>
+              }
+
+              @if (mobileInput.errors?.['pattern']) {
+                <span>Enter a valid 10-digit mobile number.</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- =========================================
+             PASSWORD + CONFIRM PASSWORD
+             ========================================= -->
+
+        <div class="password-row">
+          <!-- Password -->
+          <div class="form-group">
+            <input
+              id="password"
+              type="password"
+              name="password"
+              [(ngModel)]="password"
+              #passwordInput="ngModel"
+              required
+              minlength="6"
+              placeholder="Password*"
+              autocomplete="new-password"
+            />
+
+            @if (passwordInput.invalid && passwordInput.touched) {
+              <div class="error-message">
+                @if (passwordInput.errors?.['required']) {
+                  <span>Password is required.</span>
+                }
+
+                @if (passwordInput.errors?.['minlength']) {
+                  <span>Minimum 6 characters.</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <input
+              id="confirmPassword"
+              type="password"
+              name="confirmPassword"
+              [(ngModel)]="confirmPassword"
+              #confirmPasswordInput="ngModel"
+              required
+              placeholder="Confirm password*"
+              autocomplete="new-password"
+            />
+
+            @if (confirmPasswordInput.touched) {
+              @if (confirmPasswordInput.errors?.['required']) {
+                <div class="error-message">
+                  <span>Confirm password is required.</span>
+                </div>
+              }
+
+              @if (!confirmPasswordInput.errors?.['required'] && password !== confirmPassword) {
+                <div class="error-message">
+                  <span>Passwords do not match.</span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Password Information -->
+        <div class="password-helper">Use 6 or more characters for your password</div>
+
+        <!-- =========================================
+             SUBMIT
+             ========================================= -->
+
+        <div class="form-actions">
+          <!-- Login -->
+          <a routerLink="/login" class="login-link"> Login instead </a>
+
+          <!-- Create Account -->
+          <button
+            type="submit"
+            class="next-button"
+            [disabled]="registerForm.invalid || password !== confirmPassword || isLoading"
+          >
+            @if (isLoading) {
+              <span>Creating...</span>
+            } @else {
+              <span>Next</span>
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- =========================================
+         RIGHT SIDE - GOOGLE STYLE INFORMATION
+         ========================================= -->
+
+    <section class="register-info">
+      <div class="info-content">
+        <!-- Illustration -->
+        <div class="account-illustration">
+          <div class="shield">
+            <div class="person">
+              <div class="person-head"></div>
+
+              <div class="person-body"></div>
+            </div>
+          </div>
+
+          <div class="device-row">
+            <div class="device device-one"></div>
+
+            <div class="device device-two"></div>
+
+            <div class="device device-three"></div>
+          </div>
+        </div>
+
+        <h2>One account.</h2>
+
+        <p>All your notes, reminders and important information organized in one place.</p>
+      </div>
+    </section>
+  </div>
+</div>

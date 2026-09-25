@@ -1,0 +1,1529 @@
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.notes-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 24px 28px 40px;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.search-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.search-box {
+  width: min(720px, 100%);
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
+
+  overflow: hidden;
+}
+
+.search-icon {
+  padding-left: 17px;
+  font-size: 18px;
+}
+
+.search-box input {
+  flex: 1;
+  height: 100%;
+
+  border: none;
+  outline: none;
+
+  padding: 0 14px;
+
+  font-size: 15px;
+  color: #202124;
+  background: transparent;
+}
+
+.search-button {
+  height: 100%;
+
+  border: none;
+  padding: 0 18px;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  color: #5f6368;
+  font-size: 14px;
+}
+
+.search-button:hover {
+  background: #f1f3f4;
+}
+
+.clear-search {
+  border: none;
+  background: transparent;
+
+  font-size: 22px;
+  color: #5f6368;
+
+  cursor: pointer;
+
+  padding: 5px 10px;
+}
+
+.clear-search:hover {
+  color: #202124;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.page-header {
+  max-width: 1200px;
+
+  margin: 0 auto 20px;
+  padding: 0 4px;
+}
+
+.page-header h2 {
+  margin: 0;
+
+  font-size: 22px;
+  font-weight: 500;
+
+  color: #202124;
+}
+
+/* =========================================================
+   CREATE NOTE
+   ========================================================= */
+
+.create-note-wrapper {
+  display: flex;
+
+  justify-content: center;
+
+  width: 100%;
+
+  margin-bottom: 35px;
+}
+
+.take-note-box {
+  width: min(600px, 100%);
+
+  min-height: 54px;
+
+  padding: 0 15px 0 20px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  background: #fff;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 9px;
+
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15);
+
+  cursor: text;
+
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.take-note-box:hover {
+  box-shadow: 0 2px 8px rgba(60, 64, 67, 0.2);
+}
+
+.take-note-text {
+  color: #5f6368;
+
+  font-size: 15px;
+}
+
+.quick-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+}
+
+.quick-actions button {
+  width: 38px;
+  height: 38px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-size: 17px;
+
+  color: #5f6368;
+}
+
+.quick-actions button:hover {
+  background: #f1f3f4;
+}
+
+/* =========================================================
+   EDITOR OVERLAY
+   ========================================================= */
+
+.editor-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: center;
+
+  padding-top: 100px;
+
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.note-editor {
+  width: min(600px, calc(100% - 30px));
+
+  background: #fff;
+
+  border-radius: 10px;
+
+  box-shadow: 0 8px 30px rgba(60, 64, 67, 0.3);
+
+  overflow: visible;
+
+  position: relative;
+}
+
+/* =========================================================
+   EDITOR HEADER
+   ========================================================= */
+
+.editor-header {
+  display: flex;
+
+  align-items: center;
+
+  padding: 14px 14px 8px 18px;
+}
+
+.title-input {
+  flex: 1;
+
+  border: none;
+  outline: none;
+
+  font-size: 18px;
+
+  font-weight: 500;
+
+  color: #202124;
+
+  background: transparent;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-size: 17px;
+}
+
+.icon-button:hover {
+  background: #f1f3f4;
+}
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.content-input {
+  width: 100%;
+
+  min-height: 180px;
+  max-height: 400px;
+
+  resize: vertical;
+
+  box-sizing: border-box;
+
+  border: none;
+  outline: none;
+
+  padding: 10px 18px;
+
+  font-family: inherit;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+
+  color: #202124;
+
+  background: transparent;
+}
+
+/* =========================================================
+   EDITOR FOOTER
+   ========================================================= */
+
+.editor-footer {
+  min-height: 52px;
+
+  padding: 4px 10px 8px 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+.editor-tools {
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+}
+
+.editor-tools button {
+  width: 36px;
+  height: 36px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  color: #5f6368;
+
+  transition: background 0.15s ease;
+}
+
+.editor-tools button:hover {
+  background: #f1f3f4;
+}
+
+.close-button {
+  border: none;
+
+  background: transparent;
+
+  padding: 10px 16px;
+
+  border-radius: 5px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+
+  color: #202124;
+
+  font-weight: 500;
+}
+
+.close-button:hover {
+  background: #f1f3f4;
+}
+
+.close-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+.labels-container {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 12px;
+}
+
+.label-chip {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  min-height: 24px;
+
+  box-sizing: border-box;
+
+  padding: 4px 9px;
+
+  border-radius: 12px;
+
+  background: #f1f3f4;
+
+  color: #5f6368;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.label-chip:hover {
+  background: #e8eaed;
+
+  color: #202124;
+}
+
+/* Label with remove button */
+
+.label-chip.removable {
+  padding-right: 5px;
+}
+
+.label-remove {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 17px;
+  height: 17px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  line-height: 1;
+}
+
+.label-remove:hover {
+  background: #dadce0;
+
+  color: #202124;
+}
+
+/* Add label button */
+
+.add-label-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  min-height: 24px;
+
+  padding: 4px 9px;
+
+  border: 1px dashed #c5c7c9;
+
+  border-radius: 12px;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  cursor: pointer;
+
+  font-size: 11px;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.add-label-button:hover {
+  background: #f8f9fa;
+
+  border-color: #9aa0a6;
+}
+
+/* =========================================================
+   LABEL MENU
+   ========================================================= */
+
+.label-menu {
+  position: absolute;
+
+  z-index: 1100;
+
+  width: 230px;
+
+  max-height: 300px;
+
+  overflow-y: auto;
+
+  padding: 8px 0;
+
+  background: #fff;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 8px;
+
+  box-shadow: 0 4px 16px rgba(60, 64, 67, 0.22);
+}
+
+.label-menu-title {
+  padding: 8px 14px 6px;
+
+  color: #5f6368;
+
+  font-size: 12px;
+
+  font-weight: 500;
+}
+
+.label-menu-item {
+  width: 100%;
+
+  min-height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 7px 14px;
+
+  box-sizing: border-box;
+
+  border: none;
+
+  background: transparent;
+
+  color: #202124;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+.label-menu-item:hover {
+  background: #f1f3f4;
+}
+
+.label-menu-item input {
+  width: 15px;
+  height: 15px;
+
+  cursor: pointer;
+}
+
+.label-menu-empty {
+  padding: 12px 14px;
+
+  color: #80868b;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   LABEL MANAGEMENT
+   ========================================================= */
+
+.label-management {
+  width: min(420px, calc(100% - 30px));
+
+  padding: 20px;
+
+  background: #fff;
+
+  border-radius: 10px;
+
+  box-shadow: 0 8px 30px rgba(60, 64, 67, 0.3);
+}
+
+.label-management-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.label-management-title {
+  margin: 0;
+
+  color: #202124;
+
+  font-size: 18px;
+
+  font-weight: 500;
+}
+
+.label-management-close {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  color: #5f6368;
+
+  font-size: 20px;
+}
+
+.label-management-close:hover {
+  background: #f1f3f4;
+}
+
+.create-label-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 16px;
+}
+
+.create-label-input {
+  flex: 1;
+
+  height: 38px;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 5px;
+
+  outline: none;
+
+  font-size: 13px;
+}
+
+.create-label-input:focus {
+  border-color: #1a73e8;
+
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.create-label-button {
+  height: 38px;
+
+  padding: 0 14px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: #1a73e8;
+
+  color: #fff;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 500;
+}
+
+.create-label-button:hover {
+  background: #1769d1;
+}
+
+.label-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+
+  max-height: 300px;
+
+  overflow-y: auto;
+}
+
+.label-list-item {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  min-height: 40px;
+
+  padding: 4px 6px 4px 10px;
+
+  border-radius: 6px;
+}
+
+.label-list-item:hover {
+  background: #f8f9fa;
+}
+
+.label-list-name {
+  flex: 1;
+
+  color: #202124;
+
+  font-size: 13px;
+}
+
+.label-list-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+}
+
+.label-list-actions button {
+  width: 32px;
+  height: 32px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  cursor: pointer;
+}
+
+.label-list-actions button:hover {
+  background: #e8eaed;
+}
+
+.label-list-actions .delete-label:hover {
+  background: #fce8e6;
+
+  color: #c5221f;
+}
+
+/* =========================================================
+   REMINDER CHIP
+   ========================================================= */
+
+.reminder-container {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 10px;
+}
+
+.reminder-chip {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  min-height: 25px;
+
+  box-sizing: border-box;
+
+  padding: 4px 9px;
+
+  border-radius: 12px;
+
+  background: #e8f0fe;
+
+  color: #1967d2;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+.reminder-chip-icon {
+  font-size: 12px;
+}
+
+.reminder-chip-remove {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 17px;
+  height: 17px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #1967d2;
+
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+.reminder-chip-remove:hover {
+  background: rgba(25, 103, 210, 0.12);
+}
+
+/* Reminder when date has passed */
+
+.reminder-chip.overdue {
+  background: #fce8e6;
+
+  color: #c5221f;
+}
+
+.reminder-chip.overdue .reminder-chip-remove {
+  color: #c5221f;
+}
+
+/* Reminder completed */
+
+.reminder-chip.completed {
+  background: #e6f4ea;
+
+  color: #137333;
+
+  text-decoration: line-through;
+}
+
+/* =========================================================
+   REMINDER MENU / POPUP
+   ========================================================= */
+
+.reminder-menu {
+  position: absolute;
+
+  z-index: 1200;
+
+  width: 300px;
+
+  padding: 16px;
+
+  background: #fff;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 10px;
+
+  box-shadow: 0 5px 20px rgba(60, 64, 67, 0.25);
+}
+
+.reminder-menu-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 15px;
+}
+
+.reminder-menu-title {
+  margin: 0;
+
+  color: #202124;
+
+  font-size: 15px;
+
+  font-weight: 500;
+}
+
+.reminder-menu-close {
+  width: 30px;
+  height: 30px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  cursor: pointer;
+
+  font-size: 18px;
+}
+
+.reminder-menu-close:hover {
+  background: #f1f3f4;
+}
+
+/* =========================================================
+   REMINDER QUICK OPTIONS
+   ========================================================= */
+
+.reminder-options {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  margin-bottom: 15px;
+}
+
+.reminder-option {
+  width: 100%;
+
+  min-height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 7px 10px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #202124;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+.reminder-option:hover {
+  background: #f1f3f4;
+}
+
+.reminder-option-icon {
+  width: 22px;
+
+  text-align: center;
+
+  color: #5f6368;
+}
+
+/* =========================================================
+   REMINDER FORM
+   ========================================================= */
+
+.reminder-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.reminder-field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.reminder-field label {
+  color: #5f6368;
+
+  font-size: 11px;
+
+  font-weight: 500;
+}
+
+.reminder-field input,
+.reminder-field select {
+  width: 100%;
+
+  height: 38px;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 5px;
+
+  outline: none;
+
+  background: #fff;
+
+  color: #202124;
+
+  font-family: inherit;
+
+  font-size: 13px;
+}
+
+.reminder-field input:focus,
+.reminder-field select:focus {
+  border-color: #1a73e8;
+
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+/* =========================================================
+   REMINDER FOOTER
+   ========================================================= */
+
+.reminder-actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 4px;
+}
+
+.reminder-cancel {
+  height: 36px;
+
+  padding: 0 13px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: transparent;
+
+  color: #5f6368;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 500;
+}
+
+.reminder-cancel:hover {
+  background: #f1f3f4;
+}
+
+.reminder-save {
+  height: 36px;
+
+  padding: 0 15px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: #1a73e8;
+
+  color: #fff;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 500;
+}
+
+.reminder-save:hover {
+  background: #1769d1;
+}
+
+.reminder-save:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+.reminder-delete {
+  margin-right: auto;
+
+  height: 36px;
+
+  padding: 0 10px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: transparent;
+
+  color: #c5221f;
+
+  cursor: pointer;
+
+  font-size: 13px;
+}
+
+.reminder-delete:hover {
+  background: #fce8e6;
+}
+
+/* =========================================================
+   CARD FOOTER
+   ========================================================= */
+
+.card-footer {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 18px;
+}
+
+.note-date {
+  font-size: 11px;
+
+  color: #80868b;
+}
+
+.card-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+}
+
+.action-button {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  color: #5f6368;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+.note-card:hover .action-button {
+  opacity: 1;
+}
+
+.action-button:hover {
+  background: #f1f3f4;
+}
+
+.action-button.danger:hover {
+  background: #fce8e6;
+}
+
+.restore-button:hover {
+  background: #e8f0fe;
+}
+
+/* =========================================================
+   NOTE GRID
+   ========================================================= */
+
+.notes-grid {
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  column-width: 240px;
+
+  column-gap: 16px;
+}
+
+/* =========================================================
+   NOTE CARD
+   ========================================================= */
+
+.note-card {
+  width: 100%;
+
+  display: inline-block;
+
+  vertical-align: top;
+
+  box-sizing: border-box;
+
+  margin-bottom: 16px;
+
+  padding: 16px;
+
+  background: #fff;
+
+  border: 1px solid #dadce0;
+
+  border-radius: 9px;
+
+  break-inside: avoid;
+
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12);
+
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.note-card:hover {
+  box-shadow: 0 3px 10px rgba(60, 64, 67, 0.2);
+}
+
+.pinned-card {
+  border-color: #c7c7c7;
+}
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
+
+.card-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-bottom: 10px;
+}
+
+.note-title {
+  flex: 1;
+
+  margin: 0;
+
+  font-size: 16px;
+
+  font-weight: 500;
+
+  line-height: 1.4;
+
+  color: #202124;
+
+  overflow-wrap: anywhere;
+
+  cursor: pointer;
+}
+
+.card-icon {
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+.note-card:hover .card-icon {
+  opacity: 1;
+}
+
+.card-icon:hover {
+  background: #f1f3f4;
+}
+
+.pin-icon.active {
+  opacity: 1;
+}
+
+/* =========================================================
+   NOTE CONTENT
+   ========================================================= */
+
+.note-content {
+  margin: 0;
+
+  color: #3c4043;
+
+  font-size: 14px;
+
+  line-height: 1.55;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   TRASH
+   ========================================================= */
+
+.trash-footer {
+  margin-top: 20px;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.error-message {
+  max-width: 700px;
+
+  margin: 10px auto 20px;
+
+  padding: 12px 16px;
+
+  border-radius: 6px;
+
+  background: #fce8e6;
+
+  color: #c5221f;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.notes-loading {
+  min-height: 180px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  color: #5f6368;
+}
+
+.loading-spinner {
+  width: 26px;
+
+  height: 26px;
+
+  border: 3px solid #e0e0e0;
+
+  border-top-color: #5f6368;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+  min-height: 300px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #80868b;
+
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 54px;
+
+  margin-bottom: 15px;
+
+  opacity: 0.6;
+}
+
+.empty-state p {
+  margin: 0;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.label-menu::-webkit-scrollbar,
+.label-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.label-menu::-webkit-scrollbar-thumb,
+.label-list::-webkit-scrollbar-thumb {
+  background: #dadce0;
+
+  border-radius: 10px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .notes-page {
+    padding: 20px;
+  }
+
+  .notes-grid {
+    column-width: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .notes-page {
+    padding: 16px;
+  }
+
+  .take-note-box {
+    min-height: 50px;
+  }
+
+  .quick-actions {
+    display: none;
+  }
+
+  .notes-grid {
+    column-width: 100%;
+  }
+
+  .editor-overlay {
+    padding-top: 50px;
+  }
+
+  .note-editor {
+    width: calc(100% - 20px);
+  }
+
+  .editor-tools button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .label-management {
+    width: calc(100% - 30px);
+  }
+
+  .reminder-menu {
+    width: calc(100% - 30px);
+
+    max-width: 300px;
+  }
+
+  .create-label-row {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .create-label-button {
+    width: 100%;
+  }
+}

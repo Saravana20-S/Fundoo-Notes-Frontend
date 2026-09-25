@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  color: #202124;
+  overflow: hidden;
+}
+
+.app-body {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 68px);
+}
+
+app-sidebar {
+  flex: 0 0 280px;
+}
+
+.page-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: calc(100vh - 68px);
+  box-sizing: border-box;
+  padding: 14px 24px 40px;
+  overflow: auto;
+}
+
+@media (max-width: 800px) {
+  app-sidebar {
+    flex: 0 0 76px;
+  }
+
+  .page-content {
+    padding: 14px 16px 30px;
+  }
+}

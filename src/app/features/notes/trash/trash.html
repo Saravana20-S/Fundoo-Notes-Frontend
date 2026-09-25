@@ -1,0 +1,119 @@
+<div class="trash-page">
+  <!-- ===================================================== -->
+  <!-- HEADER -->
+  <!-- ===================================================== -->
+
+  <div class="trash-header">
+    <div class="header-left">
+      <button type="button" class="back-button" title="Back to Notes" (click)="goToNotes()">
+        ←
+      </button>
+
+      <div>
+        <h1>Trash</h1>
+
+        <p>Notes in Trash are temporarily stored here.</p>
+      </div>
+    </div>
+
+    @if (notes.length > 0) {
+      <button type="button" class="empty-trash-button" (click)="emptyTrash()">🗑 Empty Trash</button>
+    }
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ERROR -->
+  <!-- ===================================================== -->
+
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- LOADING -->
+  <!-- ===================================================== -->
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+
+      <p>Loading Trash...</p>
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- TRASH NOTES -->
+  <!-- ===================================================== -->
+
+  @if (!isLoading && notes.length > 0) {
+    <div class="trash-grid">
+      @for (note of notes; track note.id) {
+        <article class="trash-card">
+          <!-- ============================================= -->
+          <!-- TITLE -->
+          <!-- ============================================= -->
+
+          <div class="card-header">
+            <h2>
+              {{ note.title || 'Untitled' }}
+            </h2>
+
+            <span class="trash-badge"> Trash </span>
+          </div>
+
+          <!-- ============================================= -->
+          <!-- CONTENT -->
+          <!-- ============================================= -->
+
+          @if (note.content) {
+            <p class="note-content">
+              {{ note.content }}
+            </p>
+          }
+
+          <!-- ============================================= -->
+          <!-- DATE -->
+          <!-- ============================================= -->
+
+          <div class="note-date">
+            Deleted/Updated:
+
+            {{ note.updatedDate | date: 'MMM d, yyyy' }}
+          </div>
+
+          <!-- ============================================= -->
+          <!-- ACTIONS -->
+          <!-- ============================================= -->
+
+          <div class="card-actions">
+            <button type="button" class="restore-button" (click)="restoreNote(note, $event)">
+              ↩ Restore
+            </button>
+
+            <button type="button" class="delete-button" (click)="permanentlyDelete(note, $event)">
+              🗑 Delete Permanently
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- EMPTY TRASH -->
+  <!-- ===================================================== -->
+
+  @if (!isLoading && notes.length === 0) {
+    <div class="empty-trash">
+      <div class="empty-icon">🗑</div>
+
+      <h2>Trash is empty</h2>
+
+      <p>Notes that you delete will appear here.</p>
+
+      <button type="button" class="back-to-notes" (click)="goToNotes()">Back to Notes</button>
+    </div>
+  }
+</div>

@@ -1,0 +1,140 @@
+<div class="login-page">
+
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="logo">
+      <span class="logo-f">F</span>
+      <span class="logo-u">u</span>
+      <span class="logo-n">n</span>
+      <span class="logo-d">d</span>
+      <span class="logo-o">o</span>
+      <span class="logo-o2">o</span>
+      <span class="logo-n2">N</span>
+      <span class="logo-o3">o</span>
+      <span class="logo-t">t</span>
+      <span class="logo-e">e</span>
+      <span class="logo-s">s</span>
+    </div>
+
+    <!-- Header -->
+    <div class="login-header">
+      <h1>Login</h1>
+      <p>Use your FundooNotes Account</p>
+    </div>
+
+    <!-- Server Error -->
+    @if (errorMessage) {
+      <div class="server-error">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- Login Form -->
+    <form
+      #loginForm="ngForm"
+      (ngSubmit)="onLogin()"
+      novalidate
+      class="login-form"
+    >
+
+      <!-- Email -->
+      <div class="form-group">
+
+        <input
+          id="email"
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          #emailInput="ngModel"
+          required
+          email
+          placeholder="Email or phone*"
+          autocomplete="email"
+        />
+
+        @if (emailInput.invalid && emailInput.touched) {
+          <div class="error-message">
+
+            @if (emailInput.errors?.['required']) {
+              <span>Email is required.</span>
+            }
+
+            @if (emailInput.errors?.['email']) {
+              <span>Enter a valid email address.</span>
+            }
+
+          </div>
+        }
+
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+
+        <input
+          id="password"
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          #passwordInput="ngModel"
+          required
+          minlength="6"
+          placeholder="Password*"
+          autocomplete="current-password"
+        />
+
+        @if (passwordInput.invalid && passwordInput.touched) {
+          <div class="error-message">
+
+            @if (passwordInput.errors?.['required']) {
+              <span>Password is required.</span>
+            }
+
+            @if (passwordInput.errors?.['minlength']) {
+              <span>Password must contain at least 6 characters.</span>
+            }
+
+          </div>
+        }
+
+      </div>
+
+      <!-- Forgot Password -->
+      <div class="forgot-password">
+        <a routerLink="/forgot-password">
+          Forgot password?
+        </a>
+      </div>
+
+      <!-- Bottom Actions -->
+      <div class="form-actions">
+
+        <a
+          routerLink="/register"
+          class="create-account"
+        >
+          Create account
+        </a>
+
+        <button
+          type="submit"
+          class="login-button"
+          [disabled]="loginForm.invalid || isLoading"
+        >
+
+          @if (isLoading) {
+            <span>Logging in...</span>
+          } @else {
+            <span>Login</span>
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

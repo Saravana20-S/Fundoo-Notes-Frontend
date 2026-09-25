@@ -1,0 +1,90 @@
+<header class="top-navbar">
+  <div class="navbar-left">
+    <button
+      type="button"
+      class="icon-button menu-button"
+      aria-label="Open navigation menu"
+      title="Menu"
+    >
+      <span class="material-symbol">☰</span>
+    </button>
+
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <span>💡</span>
+      </div>
+
+      <span class="brand-name">FundooNotes</span>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <span class="search-icon" aria-hidden="true">⌕</span>
+
+    <input type="search" placeholder="Search" aria-label="Search notes" />
+  </div>
+
+  <div class="navbar-actions">
+    <button type="button" class="icon-button" title="Refresh" aria-label="Refresh">
+      <span>↻</span>
+    </button>
+
+    <button type="button" class="icon-button" title="Change view" aria-label="Change view">
+      <span>▤</span>
+    </button>
+
+    <button type="button" class="icon-button" title="Settings" aria-label="Settings">
+      <span>⚙</span>
+    </button>
+
+    <button type="button" class="icon-button" title="Google apps" aria-label="Apps">
+      <span class="apps-icon">⠿</span>
+    </button>
+
+    <div class="profile-wrapper">
+      <button
+        type="button"
+        class="profile-button"
+        [attr.aria-expanded]="isProfileOpen"
+        aria-label="Open account menu"
+        (click)="toggleProfile()"
+      >
+        <span class="profile-avatar">
+          {{ initials }}
+        </span>
+      </button>
+
+      @if (isProfileOpen) {
+        <div class="profile-menu">
+          <div class="profile-header">
+            <div class="profile-avatar profile-avatar-large">
+              {{ initials }}
+            </div>
+
+            <div class="profile-user-info">
+              <div class="profile-name">
+                {{ displayName }}
+              </div>
+
+              <div class="profile-email">
+                {{ email }}
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="profile-account-label">
+            <span class="account-dot"></span>
+            <span>FundooNotes account</span>
+          </div>
+
+          <button type="button" class="logout-button" (click)="logout()">
+            <span>↪</span>
+            <span>Sign out</span>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>

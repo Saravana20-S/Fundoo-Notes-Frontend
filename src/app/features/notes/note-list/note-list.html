@@ -1,0 +1,331 @@
+<div class="notes-page">
+  <!-- ===================================================== -->
+  <!-- SEARCH BAR -->
+  <!-- ===================================================== -->
+
+  <div class="search-section">
+    <div class="search-box">
+      <span class="search-icon"> 🔍 </span>
+
+      <input
+        type="text"
+        placeholder="Search your notes..."
+        [(ngModel)]="searchText"
+        (input)="onSearchInput()"
+      />
+
+      @if (searchText) {
+        <button type="button" class="clear-search" title="Clear search" (click)="clearSearch()">
+          ×
+        </button>
+      }
+
+      <button type="button" class="search-button" (click)="onSearchInput()">Search</button>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ===================================================== -->
+
+  <div class="page-header">
+    @if (currentView === 'notes') {
+      <h2>Notes</h2>
+    } @else if (currentView === 'archive') {
+      <h2>Archive</h2>
+    } @else {
+      <h2>Trash</h2>
+    }
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- CREATE NOTE -->
+  <!-- ===================================================== -->
+
+  @if (currentView === 'notes') {
+    <div class="create-note-wrapper">
+      @if (!isEditorOpen) {
+        <div class="take-note-box" (click)="openEditor()">
+          <span class="take-note-text"> Take a note... </span>
+
+          <div class="quick-actions">
+            <button type="button" title="Checklist" (click)="$event.stopPropagation()">☑</button>
+
+            <button type="button" title="Drawing" (click)="$event.stopPropagation()">✎</button>
+
+            <button type="button" title="Image" (click)="$event.stopPropagation()">▣</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- NOTE EDITOR -->
+  <!-- ===================================================== -->
+
+  @if (isEditorOpen) {
+    <div class="editor-overlay" (click)="handleOutsideClick()">
+      <div class="note-editor" (click)="$event.stopPropagation()">
+        <!-- HEADER -->
+
+        <div class="editor-header">
+          <input
+            type="text"
+            class="title-input"
+            placeholder="Title"
+            [(ngModel)]="title"
+            maxlength="200"
+            autofocus
+          />
+
+          <button type="button" class="icon-button" title="Pin">📌</button>
+        </div>
+
+        <!-- CONTENT -->
+
+        <textarea
+          class="content-input"
+          placeholder="Take a note..."
+          [(ngModel)]="content"
+        ></textarea>
+
+        <!-- FOOTER -->
+
+        <div class="editor-footer">
+          <div class="editor-tools">
+            <button type="button" title="Text formatting">A</button>
+
+            <button type="button" title="Background color">◉</button>
+
+            <button type="button" title="Reminder">♧</button>
+
+            <button type="button" title="Collaborator">♙</button>
+
+            <button type="button" title="Add image">▣</button>
+
+            <button type="button" title="More">⋮</button>
+          </div>
+
+          <button type="button" class="close-button" (click)="saveNote()" [disabled]="isSaving">
+            @if (isSaving) {
+              Saving...
+            } @else {
+              Close
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- ERROR -->
+  <!-- ===================================================== -->
+
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- LOADING -->
+  <!-- ===================================================== -->
+
+  @if (isLoading) {
+    <div class="notes-loading">
+      <div class="loading-spinner"></div>
+
+      <span> Loading notes... </span>
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- NOTES -->
+  <!-- ===================================================== -->
+
+  @if (!isLoading && notes.length > 0) {
+    <div class="notes-grid">
+      @for (note of notes; track note.id) {
+        <article class="note-card" [class.pinned-card]="note.pinned">
+          <!-- ============================================= -->
+          <!-- CARD HEADER -->
+          <!-- ============================================= -->
+
+          <div class="card-header">
+            <h3 class="note-title" (click)="currentView !== 'trash' ? openNote(note) : null">
+              {{ note.title || 'Untitled' }}
+            </h3>
+
+            @if (currentView !== 'trash') {
+              <button
+                type="button"
+                class="card-icon pin-icon"
+                [class.active]="note.pinned"
+                [title]="note.pinned ? 'Unpin' : 'Pin'"
+                (click)="togglePin(note, $event)"
+              >
+                📌
+              </button>
+            }
+          </div>
+
+          <!-- ============================================= -->
+          <!-- NOTE CONTENT -->
+          <!-- ============================================= -->
+
+          @if (note.content) {
+            <p class="note-content" (click)="currentView !== 'trash' ? openNote(note) : null">
+              {{ note.content }}
+            </p>
+          }
+
+          <!-- ============================================= -->
+          <!-- LABELS -->
+          <!-- ============================================= -->
+
+          @if (note.labels && note.labels.length > 0) {
+            <div class="labels-container">
+              @for (label of note.labels; track label.id) {
+                <span class="label-chip">
+                  {{ label.name }}
+                </span>
+              }
+            </div>
+          }
+
+          <!-- ============================================= -->
+          <!-- ACTIVE NOTES ACTIONS -->
+          <!-- ============================================= -->
+
+          @if (currentView === 'notes') {
+            <div class="card-footer" (click)="$event.stopPropagation()">
+              <span class="note-date">
+                {{ note.updatedDate | date: 'MMM d' }}
+              </span>
+
+              <div class="card-actions">
+                <!-- Archive -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Archive"
+                  (click)="toggleArchive(note, $event)"
+                >
+                  🗃
+                </button>
+
+                <!-- Trash -->
+
+                <button
+                  type="button"
+                  class="action-button danger"
+                  title="Move to trash"
+                  (click)="moveToTrash(note, $event)"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================= -->
+          <!-- ARCHIVE ACTIONS -->
+          <!-- ============================================= -->
+
+          @if (currentView === 'archive') {
+            <div class="card-footer" (click)="$event.stopPropagation()">
+              <span class="note-date">
+                {{ note.updatedDate | date: 'MMM d' }}
+              </span>
+
+              <div class="card-actions">
+                <!-- Unarchive -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Unarchive"
+                  (click)="toggleArchive(note, $event)"
+                >
+                  📥
+                </button>
+
+                <!-- Trash -->
+
+                <button
+                  type="button"
+                  class="action-button danger"
+                  title="Move to trash"
+                  (click)="moveToTrash(note, $event)"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================= -->
+          <!-- TRASH ACTIONS -->
+          <!-- ============================================= -->
+
+          @if (currentView === 'trash') {
+            <div class="card-footer trash-footer" (click)="$event.stopPropagation()">
+              <span class="note-date">
+                {{ note.updatedDate | date: 'MMM d' }}
+              </span>
+
+              <div class="card-actions">
+                <!-- Restore -->
+
+                <button
+                  type="button"
+                  class="action-button restore-button"
+                  title="Restore"
+                  (click)="restoreNote(note, $event)"
+                >
+                  ↩
+                </button>
+
+                <!-- Permanent Delete -->
+
+                <button
+                  type="button"
+                  class="action-button danger"
+                  title="Delete permanently"
+                  (click)="permanentlyDelete(note, $event)"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  <!-- ===================================================== -->
+  <!-- EMPTY STATE -->
+  <!-- ===================================================== -->
+
+  @if (!isLoading && notes.length === 0 && !isEditorOpen) {
+    <div class="empty-state">
+      @if (currentView === 'notes') {
+        <div class="empty-icon">♧</div>
+
+        <p>Notes that you add appear here</p>
+      } @else if (currentView === 'archive') {
+        <div class="empty-icon">🗃</div>
+
+        <p>Your archived notes appear here</p>
+      } @else {
+        <div class="empty-icon">🗑</div>
+
+        <p>No notes in Trash</p>
+      }
+    </div>
+  }
+</div>

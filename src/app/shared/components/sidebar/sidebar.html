@@ -1,0 +1,54 @@
+<aside class="sidebar">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <a
+      routerLink="/notes"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="sidebar-item"
+      (click)="selectNavigation()"
+    >
+      <span class="sidebar-icon">💡</span>
+      <span class="sidebar-label">Notes</span>
+    </a>
+
+    <a
+      routerLink="/reminders"
+      routerLinkActive="active"
+      class="sidebar-item"
+      (click)="selectNavigation()"
+    >
+      <span class="sidebar-icon">♧</span>
+      <span class="sidebar-label">Reminders</span>
+    </a>
+
+    <a
+      routerLink="/labels"
+      routerLinkActive="active"
+      class="sidebar-item"
+      (click)="selectNavigation()"
+    >
+      <span class="sidebar-icon">✎</span>
+      <span class="sidebar-label">Edit labels</span>
+    </a>
+
+    <a
+      routerLink="/archive"
+      routerLinkActive="active"
+      class="sidebar-item"
+      (click)="selectNavigation()"
+    >
+      <span class="sidebar-icon">▣</span>
+      <span class="sidebar-label">Archive</span>
+    </a>
+
+    <a
+      routerLink="/trash"
+      routerLinkActive="active"
+      class="sidebar-item"
+      (click)="selectNavigation()"
+    >
+      <span class="sidebar-icon">▥</span>
+      <span class="sidebar-label">Bin</span>
+    </a>
+  </nav>
+</aside>
