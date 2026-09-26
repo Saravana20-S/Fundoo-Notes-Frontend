@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { CommonModule, DatePipe } from '@angular/common';
 
@@ -10,6 +10,10 @@ import { NoteService } from '../services/note';
 
 import { NoteRequest, NoteResponse } from '../../../core/models/note.model';
 
+import { Subscription } from 'rxjs';
+
+import { NoteListService } from '../../../core/services/note-list';
+
 @Component({
   selector: 'app-note-list',
   standalone: true,
@@ -17,10 +21,21 @@ import { NoteRequest, NoteResponse } from '../../../core/models/note.model';
   templateUrl: './note-list.html',
   styleUrl: './note-list.css',
 })
-export class NoteList implements OnInit {
+export class NoteList implements OnInit, OnDestroy {
   private readonly noteService = inject(NoteService);
+
   private readonly route = inject(ActivatedRoute);
+
   private readonly router = inject(Router);
+
+  // Shared note list/search service
+  private readonly noteListService = inject(NoteListService);
+
+  // Change detection
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  // Subscription for shared notes
+  private notesSubscription?: Subscription;
 
   // =========================================================
   // NOTES
@@ -33,6 +48,7 @@ export class NoteList implements OnInit {
   // =========================================================
 
   isLoading = false;
+
   isSaving = false;
 
   errorMessage = '';
@@ -46,6 +62,7 @@ export class NoteList implements OnInit {
   editingNoteId: number | null = null;
 
   title = '';
+
   content = '';
 
   // =========================================================
@@ -54,29 +71,43 @@ export class NoteList implements OnInit {
 
   currentView: 'notes' | 'archive' | 'trash' = 'notes';
 
-  // SEARCH NOTES
-
-  searchText = '';
-
-  private searchTimer: ReturnType<typeof setTimeout> | null = null;
-
   // =========================================================
   // INITIALIZATION
   // =========================================================
 
   ngOnInit(): void {
-    this.route.url.subscribe((segments) => {
-      const path = segments.length > 0 ? segments[segments.length - 1].path : 'notes';
+    this.notesSubscription = this.noteListService.notes$.subscribe((notes) => {
+      console.log('NOTE LIST RECEIVED LENGTH:', notes.length);
 
-      if (path === 'archive') {
+      console.log(
+        'NOTE LIST RECEIVED TITLES:',
+        notes.map((note) => note.title),
+      );
+
+      this.notes = notes;
+
+      console.log(
+        'THIS.NOTES AFTER ASSIGN:',
+        this.notes.map((note) => note.title),
+      );
+
+      // Force UI update after search result is received
+      this.cdr.detectChanges();
+    });
+
+    this.route.url.subscribe((segments) => {
+      const path = segments.map((segment) => segment.path);
+
+      if (path.includes('archive')) {
         this.currentView = 'archive';
-      } else if (path === 'trash') {
+      } else if (path.includes('trash')) {
         this.currentView = 'trash';
       } else {
         this.currentView = 'notes';
       }
 
-      this.loadNotes();
+      this.noteListService.setCurrentView(this.currentView);
+      this.noteListService.loadNotes();
     });
   }
 
@@ -86,6 +117,7 @@ export class NoteList implements OnInit {
 
   loadNotes(): void {
     this.isLoading = true;
+
     this.errorMessage = '';
 
     if (this.currentView === 'trash') {
@@ -140,6 +172,7 @@ export class NoteList implements OnInit {
   private sortNotes(): void {
     this.notes.sort((a, b) => {
       // Pinned notes first
+
       if (a.pinned && !b.pinned) {
         return -1;
       }
@@ -149,6 +182,7 @@ export class NoteList implements OnInit {
       }
 
       // Then latest updated note
+
       const dateA = new Date(a.updatedDate).getTime();
 
       const dateB = new Date(b.updatedDate).getTime();
@@ -165,6 +199,7 @@ export class NoteList implements OnInit {
     this.editingNoteId = null;
 
     this.title = '';
+
     this.content = '';
 
     this.errorMessage = '';
@@ -323,9 +358,7 @@ export class NoteList implements OnInit {
 
     this.noteService.createNote(request).subscribe({
       next: (createdNote) => {
-        // ================================================
-        // REPLACE TEMPORARY NOTE WITH REAL NOTE
-        // ================================================
+        // Replace temporary note with real note
 
         this.notes = this.notes.map((note) => (note.id === temporaryId ? createdNote : note));
 
@@ -341,9 +374,7 @@ export class NoteList implements OnInit {
       error: (error) => {
         console.error('Unable to create note:', error);
 
-        // ================================================
-        // ROLLBACK
-        // ================================================
+        // Rollback
 
         this.notes = this.notes.filter((note) => note.id !== temporaryId);
 
@@ -366,6 +397,7 @@ export class NoteList implements OnInit {
     this.editingNoteId = null;
 
     this.title = '';
+
     this.content = '';
   }
 
@@ -418,8 +450,7 @@ export class NoteList implements OnInit {
 
     request$.subscribe({
       next: (serverNote) => {
-        // Backend succeeded.
-        // Replace optimistic version with real response.
+        // Replace optimistic version with real response
 
         const currentCache = this.noteService.getCachedNotes();
 
@@ -435,9 +466,7 @@ export class NoteList implements OnInit {
       error: (error) => {
         console.error('Pin/Unpin failed:', error);
 
-        // =====================================================
-        // ROLLBACK
-        // =====================================================
+        // Rollback
 
         const currentCache = this.noteService.getCachedNotes();
 
@@ -467,6 +496,7 @@ export class NoteList implements OnInit {
      * Save the original note.
      * If backend fails, we can restore it.
      */
+
     const originalNote = {
       ...note,
     };
@@ -477,12 +507,14 @@ export class NoteList implements OnInit {
 
     const updatedNote: NoteResponse = {
       ...note,
+
       archived: !wasArchived,
     };
 
     /*
      * Update local cache immediately.
      */
+
     const currentNotes = this.noteService.getCachedNotes();
 
     this.noteService.setCachedNotes(
@@ -492,6 +524,7 @@ export class NoteList implements OnInit {
     /*
      * Remove from the current page immediately.
      */
+
     this.notes = this.notes.filter((item) => item.id !== note.id);
 
     // =======================================================
@@ -507,6 +540,7 @@ export class NoteList implements OnInit {
         /*
          * Replace cache with actual backend response.
          */
+
         const cached = this.noteService.getCachedNotes();
 
         this.noteService.setCachedNotes(
@@ -530,6 +564,7 @@ export class NoteList implements OnInit {
         /*
          * Put note back into current page.
          */
+
         if (this.currentView === 'notes' && !originalNote.archived && !originalNote.trashed) {
           this.notes = [originalNote, ...this.notes];
 
@@ -570,12 +605,14 @@ export class NoteList implements OnInit {
 
     const updatedNote: NoteResponse = {
       ...note,
+
       trashed: true,
     };
 
     /*
      * Update cache immediately.
      */
+
     const currentNotes = this.noteService.getCachedNotes();
 
     this.noteService.setCachedNotes(
@@ -585,6 +622,7 @@ export class NoteList implements OnInit {
     /*
      * Remove immediately from current page.
      */
+
     this.notes = this.notes.filter((item) => item.id !== note.id);
 
     // =======================================================
@@ -599,9 +637,7 @@ export class NoteList implements OnInit {
       error: (error) => {
         console.error('Unable to move note to Trash:', error);
 
-        // =================================================
-        // ROLLBACK
-        // =================================================
+        // Rollback
 
         const cached = this.noteService.getCachedNotes();
 
@@ -612,6 +648,7 @@ export class NoteList implements OnInit {
         /*
          * Put the note back.
          */
+
         if (this.currentView !== 'trash') {
           this.notes = [originalNote, ...this.notes];
 
@@ -707,154 +744,11 @@ export class NoteList implements OnInit {
     }
   }
 
-  // SEARCH NOTES FUNCTION
   // =========================================================
-  // SEARCH INPUT
-  // =========================================================
-
-  onSearchInput(): void {
-    /*
-     * Clear previous timer.
-     */
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-    }
-
-    /*
-     * Empty search -> restore normal notes.
-     */
-    if (!this.searchText.trim()) {
-      this.loadNotes();
-
-      return;
-    }
-
-    /*
-     * Small debounce.
-     *
-     * Search starts 250ms after the user stops typing.
-     */
-    this.searchTimer = setTimeout(() => {
-      this.searchNotes();
-    }, 250);
-  }
-
-  // =========================================================
-  // SEARCH NOTES
+  // DESTROY
   // =========================================================
 
-  searchNotes(): void {
-    const search = this.searchText.trim().toLowerCase();
-
-    if (!search) {
-      this.loadNotes();
-
-      return;
-    }
-
-    // =======================================================
-    // SEARCH LOCAL CACHE FIRST
-    // =======================================================
-
-    const cachedNotes = this.noteService.getCachedNotes();
-
-    if (cachedNotes.length > 0) {
-      const filtered = cachedNotes.filter((note) => {
-        /*
-         * Search title
-         */
-        const title = (note.title ?? '').toLowerCase();
-
-        /*
-         * Search content
-         */
-        const content = (note.content ?? '').toLowerCase();
-
-        /*
-         * Search labels
-         */
-        const labels = (note.labels ?? []).map((label) => label.name.toLowerCase()).join(' ');
-
-        const matches =
-          title.includes(search) || content.includes(search) || labels.includes(search);
-
-        if (!matches) {
-          return false;
-        }
-
-        // ===============================================
-        // CURRENT PAGE FILTER
-        // ===============================================
-
-        if (this.currentView === 'trash') {
-          return note.trashed;
-        }
-
-        if (this.currentView === 'archive') {
-          return note.archived && !note.trashed;
-        }
-
-        return !note.archived && !note.trashed;
-      });
-
-      this.notes = filtered;
-
-      this.sortNotes();
-
-      return;
-    }
-
-    // =======================================================
-    // NO CACHE
-    // FALL BACK TO BACKEND
-    // =======================================================
-
-    this.isLoading = true;
-
-    this.noteService.searchNotes(search, 0, 50).subscribe({
-      next: (response) => {
-        const results = response?.content ?? response ?? [];
-
-        this.notes = results.filter((note: NoteResponse) => {
-          if (this.currentView === 'trash') {
-            return note.trashed;
-          }
-
-          if (this.currentView === 'archive') {
-            return note.archived && !note.trashed;
-          }
-
-          return !note.archived && !note.trashed;
-        });
-
-        this.sortNotes();
-
-        this.isLoading = false;
-      },
-
-      error: (error) => {
-        console.error('Search failed:', error);
-
-        this.isLoading = false;
-
-        this.errorMessage = 'Unable to search notes.';
-      },
-    });
-  }
-
-  // =========================================================
-  // CLEAR SEARCH
-  // =========================================================
-
-  clearSearch(): void {
-    this.searchText = '';
-
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-
-      this.searchTimer = null;
-    }
-
-    this.loadNotes();
+  ngOnDestroy(): void {
+    this.notesSubscription?.unsubscribe();
   }
 }

@@ -1,28 +1,4 @@
 <div class="notes-page">
-  <!-- ===================================================== -->
-  <!-- SEARCH BAR -->
-  <!-- ===================================================== -->
-
-  <div class="search-section">
-    <div class="search-box">
-      <span class="search-icon"> 🔍 </span>
-
-      <input
-        type="text"
-        placeholder="Search your notes..."
-        [(ngModel)]="searchText"
-        (input)="onSearchInput()"
-      />
-
-      @if (searchText) {
-        <button type="button" class="clear-search" title="Clear search" (click)="clearSearch()">
-          ×
-        </button>
-      }
-
-      <button type="button" class="search-button" (click)="onSearchInput()">Search</button>
-    </div>
-  </div>
 
   <!-- ===================================================== -->
   <!-- PAGE HEADER -->

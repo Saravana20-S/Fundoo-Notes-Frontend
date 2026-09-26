@@ -1,5 +1,15 @@
+
+
 <header class="top-navbar">
+
+  <!-- ===================================================== -->
+  <!-- LEFT SIDE -->
+  <!-- ===================================================== -->
+
   <div class="navbar-left">
+
+    <!-- Menu -->
+
     <button
       type="button"
       class="icon-button menu-button"
@@ -9,39 +19,123 @@
       <span class="material-symbol">☰</span>
     </button>
 
+    <!-- Brand -->
+
     <div class="brand">
-      <div class="brand-icon" aria-hidden="true">
+
+      <div
+        class="brand-icon"
+        aria-hidden="true"
+      >
         <span>💡</span>
       </div>
 
-      <span class="brand-name">FundooNotes</span>
+      <span class="brand-name">
+        FundooNotes
+      </span>
+
     </div>
+
   </div>
+
+
+  <!-- ===================================================== -->
+  <!-- SEARCH -->
+  <!-- ===================================================== -->
 
   <div class="search-box">
-    <span class="search-icon" aria-hidden="true">⌕</span>
 
-    <input type="search" placeholder="Search" aria-label="Search notes" />
-  </div>
+  <span
+    class="search-icon"
+    aria-hidden="true"
+  >
+    ⌕
+  </span>
+
+  <input
+    type="search"
+    placeholder="Search"
+    aria-label="Search notes"
+    [(ngModel)]="searchText"
+    (input)="onSearchInput()"
+  />
+
+  @if (searchText) {
+
+    <button
+      type="button"
+      class="clear-search"
+      title="Clear search"
+      aria-label="Clear search"
+      (click)="clearSearch()"
+    >
+      ×
+    </button>
+
+  }
+
+</div>
+
+  <!-- ===================================================== -->
+  <!-- NAVBAR ACTIONS -->
+  <!-- ===================================================== -->
 
   <div class="navbar-actions">
-    <button type="button" class="icon-button" title="Refresh" aria-label="Refresh">
+
+    <!-- Refresh -->
+
+    <button
+      type="button"
+      class="icon-button"
+      title="Refresh"
+      aria-label="Refresh"
+    >
       <span>↻</span>
     </button>
 
-    <button type="button" class="icon-button" title="Change view" aria-label="Change view">
+
+    <!-- Change View -->
+
+    <button
+      type="button"
+      class="icon-button"
+      title="Change view"
+      aria-label="Change view"
+    >
       <span>▤</span>
     </button>
 
-    <button type="button" class="icon-button" title="Settings" aria-label="Settings">
+
+    <!-- Settings -->
+
+    <button
+      type="button"
+      class="icon-button"
+      title="Settings"
+      aria-label="Settings"
+    >
       <span>⚙</span>
     </button>
 
-    <button type="button" class="icon-button" title="Google apps" aria-label="Apps">
+
+    <!-- Google Apps -->
+
+    <button
+      type="button"
+      class="icon-button"
+      title="Google apps"
+      aria-label="Apps"
+    >
       <span class="apps-icon">⠿</span>
     </button>
 
+
+    <!-- =================================================== -->
+    <!-- PROFILE -->
+    <!-- =================================================== -->
+
     <div class="profile-wrapper">
+
       <button
         type="button"
         class="profile-button"
@@ -49,19 +143,30 @@
         aria-label="Open account menu"
         (click)="toggleProfile()"
       >
+
         <span class="profile-avatar">
           {{ initials }}
         </span>
+
       </button>
 
+
       @if (isProfileOpen) {
+
         <div class="profile-menu">
+
+          <!-- Profile Header -->
+
           <div class="profile-header">
-            <div class="profile-avatar profile-avatar-large">
+
+            <div
+              class="profile-avatar profile-avatar-large"
+            >
               {{ initials }}
             </div>
 
             <div class="profile-user-info">
+
               <div class="profile-name">
                 {{ displayName }}
               </div>
@@ -69,22 +174,52 @@
               <div class="profile-email">
                 {{ email }}
               </div>
+
             </div>
+
           </div>
+
+
+          <!-- Divider -->
 
           <div class="profile-divider"></div>
 
+
+          <!-- Account -->
+
           <div class="profile-account-label">
+
             <span class="account-dot"></span>
-            <span>FundooNotes account</span>
+
+            <span>
+              FundooNotes account
+            </span>
+
           </div>
 
-          <button type="button" class="logout-button" (click)="logout()">
+
+          <!-- Logout -->
+
+          <button
+            type="button"
+            class="logout-button"
+            (click)="logout()"
+          >
+
             <span>↪</span>
-            <span>Sign out</span>
+
+            <span>
+              Sign out
+            </span>
+
           </button>
+
         </div>
+
       }
+
     </div>
+
   </div>
+
 </header>
