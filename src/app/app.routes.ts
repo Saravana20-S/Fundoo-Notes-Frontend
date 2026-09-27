@@ -9,14 +9,16 @@ import { NoteList } from './features/notes/note-list/note-list';
 
 import { authGuard } from './core/guards/auth.guard';
 
-import { Trash } from './features/notes/trash/trash';
-
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',
   },
+
+  // =========================
+  // PUBLIC ROUTES
+  // =========================
 
   {
     path: 'login',
@@ -33,28 +35,44 @@ export const routes: Routes = [
     component: ForgotPassword,
   },
 
+  // =========================
+  // PROTECTED APPLICATION
+  // =========================
+
   {
     path: '',
     component: Layout,
     canActivate: [authGuard],
-
     children: [
+      // Normal notes
       {
         path: 'notes',
         component: NoteList,
       },
 
+      // Archive
       {
         path: 'archive',
         component: NoteList,
       },
 
+      // Trash / Bin
       {
         path: 'trash',
-        component: Trash,
+        component: NoteList,
+      },
+
+      // Label-specific notes
+      {
+        path: 'label/:labelId',
+        component: NoteList,
       },
     ],
   },
+
+  // =========================
+  // FALLBACK
+  // =========================
 
   {
     path: '**',

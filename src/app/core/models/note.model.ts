@@ -1,3 +1,4 @@
+import { LabelResponse } from './label.model';
 export interface NoteRequest {
   title: string;
   content: string;
@@ -18,7 +19,7 @@ export interface NoteResponse {
   labels?: LabelResponse[];
 }
 
-export interface LabelResponse {
-  id: number;
-  name: string;
-}
+// export interface LabelResponse {
+//   id: number;
+//   name: string;
+// }

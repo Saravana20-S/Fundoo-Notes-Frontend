@@ -1,5 +1,9 @@
 <aside class="sidebar">
   <nav class="sidebar-nav" aria-label="Main navigation">
+    <!-- ================================================= -->
+    <!-- NOTES -->
+    <!-- ================================================= -->
+
     <a
       routerLink="/notes"
       routerLinkActive="active"
@@ -7,9 +11,14 @@
       class="sidebar-item"
       (click)="selectNavigation()"
     >
-      <span class="sidebar-icon">💡</span>
-      <span class="sidebar-label">Notes</span>
+      <span class="sidebar-icon"> 💡 </span>
+
+      <span class="sidebar-label"> Notes </span>
     </a>
+
+    <!-- ================================================= -->
+    <!-- REMINDERS -->
+    <!-- ================================================= -->
 
     <a
       routerLink="/reminders"
@@ -17,19 +26,43 @@
       class="sidebar-item"
       (click)="selectNavigation()"
     >
-      <span class="sidebar-icon">♧</span>
-      <span class="sidebar-label">Reminders</span>
+      <span class="sidebar-icon"> ♧ </span>
+
+      <span class="sidebar-label"> Reminders </span>
     </a>
 
-    <a
-      routerLink="/labels"
-      routerLinkActive="active"
-      class="sidebar-item"
-      (click)="selectNavigation()"
-    >
-      <span class="sidebar-icon">✎</span>
-      <span class="sidebar-label">Edit labels</span>
-    </a>
+    <!-- ================================================= -->
+    <!-- USER LABELS -->
+    <!-- ================================================= -->
+
+    @for (label of labels; track label.id) {
+      <a
+        [routerLink]="['/label', label.id]"
+        routerLinkActive="active"
+        class="sidebar-item label-sidebar-item"
+        (click)="selectNavigation()"
+      >
+        <span class="sidebar-icon"> 🏷 </span>
+
+        <span class="sidebar-label">
+          {{ label.name }}
+        </span>
+      </a>
+    }
+
+    <!-- ================================================= -->
+    <!-- EDIT LABELS -->
+    <!-- ================================================= -->
+
+    <button type="button" class="sidebar-item sidebar-button" (click)="openLabelDialog()">
+      <span class="sidebar-icon"> ✎ </span>
+
+      <span class="sidebar-label"> Edit labels </span>
+    </button>
+
+    <!-- ================================================= -->
+    <!-- ARCHIVE -->
+    <!-- ================================================= -->
 
     <a
       routerLink="/archive"
@@ -37,9 +70,14 @@
       class="sidebar-item"
       (click)="selectNavigation()"
     >
-      <span class="sidebar-icon">▣</span>
-      <span class="sidebar-label">Archive</span>
+      <span class="sidebar-icon"> ▣ </span>
+
+      <span class="sidebar-label"> Archive </span>
     </a>
+
+    <!-- ================================================= -->
+    <!-- TRASH -->
+    <!-- ================================================= -->
 
     <a
       routerLink="/trash"
@@ -47,8 +85,15 @@
       class="sidebar-item"
       (click)="selectNavigation()"
     >
-      <span class="sidebar-icon">▥</span>
-      <span class="sidebar-label">Bin</span>
+      <span class="sidebar-icon"> ▥ </span>
+
+      <span class="sidebar-label"> Bin </span>
     </a>
   </nav>
+
+  <!-- ===================================================== -->
+  <!-- LABEL DIALOG -->
+  <!-- ===================================================== -->
+
+  <app-label-dialog [open]="isLabelDialogOpen" (closed)="closeLabelDialog()"> </app-label-dialog>
 </aside>
