@@ -1,0 +1,106 @@
+<div class="reminders-page">
+  <!-- =============================================== -->
+  <!-- HEADER -->
+  <!-- =============================================== -->
+
+  <div class="reminders-header">
+    <div class="reminders-header-content">
+      <h2>Reminders</h2>
+
+      <p>Your upcoming reminders</p>
+    </div>
+
+    <div class="reminder-count">
+      {{ reminders.length }}
+    </div>
+  </div>
+
+  <!-- =============================================== -->
+  <!-- ERROR -->
+  <!-- =============================================== -->
+
+  @if (errorMessage) {
+    <div class="reminders-error">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- =============================================== -->
+  <!-- LOADING -->
+  <!-- =============================================== -->
+
+  @if (isLoading) {
+    <div class="reminders-loading">
+      <div class="loading-spinner"></div>
+
+      <span> Loading reminders... </span>
+    </div>
+  }
+
+  <!-- =============================================== -->
+  <!-- REMINDER LIST -->
+  <!-- =============================================== -->
+
+  @if (!isLoading && reminders.length > 0) {
+    <div class="reminders-list">
+      @for (reminder of reminders; track reminder.id) {
+        <article class="reminder-card">
+          <!-- REMINDER ICON -->
+
+          <div class="reminder-icon">♧</div>
+
+          <!-- REMINDER INFORMATION -->
+
+          <div class="reminder-content">
+            <h3 class="reminder-title">
+              {{ getNoteTitle(reminder.noteId) }}
+            </h3>
+
+            @if (getNoteContent(reminder.noteId)) {
+              <p class="reminder-note-content">
+                {{ getNoteContent(reminder.noteId) }}
+              </p>
+            }
+
+            <div class="reminder-time">
+              <span class="reminder-time-icon"> 🕐 </span>
+
+              <span>
+                {{ reminder.reminderTime | date: 'MMM d, y, h:mm a' }}
+              </span>
+            </div>
+
+            <div class="reminder-status">
+              {{ reminder.status }}
+            </div>
+          </div>
+
+          <!-- DELETE -->
+
+          <button
+            type="button"
+            class="reminder-delete"
+            title="Delete reminder"
+            (click)="deleteReminder(reminder)"
+          >
+            🗑
+          </button>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- =============================================== -->
+  <!-- EMPTY -->
+  <!-- =============================================== -->
+
+  @if (!isLoading && reminders.length === 0 && !errorMessage) {
+    <div class="empty-reminders">
+      <div class="empty-reminder-icon">♧</div>
+
+      <h3>No reminders</h3>
+
+      <p>Reminders that you add to your notes appear here.</p>
+    </div>
+  }
+</div>

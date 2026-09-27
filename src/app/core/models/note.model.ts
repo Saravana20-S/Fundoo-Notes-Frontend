@@ -18,8 +18,3 @@ export interface NoteResponse {
 
   labels?: LabelResponse[];
 }
-
-// export interface LabelResponse {
-//   id: number;
-//   name: string;
-// }

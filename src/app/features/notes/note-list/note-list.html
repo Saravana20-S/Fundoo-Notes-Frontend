@@ -1,11 +1,14 @@
 <div class="notes-page">
-
   <!-- ===================================================== -->
   <!-- PAGE HEADER -->
   <!-- ===================================================== -->
 
   <div class="page-header">
-    @if (currentView === 'notes') {
+    @if (selectedLabel) {
+      <h2>
+        {{ selectedLabel.name }}
+      </h2>
+    } @else if (currentView === 'notes') {
       <h2>Notes</h2>
     } @else if (currentView === 'archive') {
       <h2>Archive</h2>
@@ -22,7 +25,14 @@
     <div class="create-note-wrapper">
       @if (!isEditorOpen) {
         <div class="take-note-box" (click)="openEditor()">
-          <span class="take-note-text"> Take a note... </span>
+          <span class="take-note-text">
+            @if (selectedLabel) {
+              Take a note in
+              {{ selectedLabel.name }}...
+            } @else {
+              Take a note...
+            }
+          </span>
 
           <div class="quick-actions">
             <button type="button" title="Checklist" (click)="$event.stopPropagation()">☑</button>
@@ -182,6 +192,28 @@
               </span>
 
               <div class="card-actions">
+                <!-- Label -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Label note"
+                  (click)="toggleLabelMenu(note, $event)"
+                >
+                  🏷
+                </button>
+
+                <!-- Reminder -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Reminder"
+                  (click)="openReminderPopup(note, $event)"
+                >
+                  ♧
+                </button>
+
                 <!-- Archive -->
 
                 <button
@@ -208,6 +240,158 @@
           }
 
           <!-- ============================================= -->
+          <!-- LABEL MENU -->
+          <!-- ============================================= -->
+
+          @if (openLabelNoteId === note.id) {
+            <div class="label-menu" (click)="$event.stopPropagation()">
+              <div class="label-menu-title">Label note</div>
+
+              <!-- SEARCH LABELS -->
+
+              <div class="label-search">
+                <input type="text" placeholder="Enter label name" [(ngModel)]="labelSearchText" />
+
+                <span> 🔍 </span>
+              </div>
+
+              <!-- LABEL LIST -->
+
+              <div class="label-list">
+                @for (label of filteredLabels; track label.id) {
+                  <label class="label-option">
+                    <input
+                      type="checkbox"
+                      [checked]="hasLabel(note, label.id)"
+                      (change)="toggleLabel(note, label, $event)"
+                    />
+
+                    <span>
+                      {{ label.name }}
+                    </span>
+                  </label>
+                } @empty {
+                  <div class="no-labels">No labels found.</div>
+                }
+              </div>
+
+              <!-- CLOSE -->
+
+              <button type="button" class="label-menu-close" (click)="closeLabelMenu()">
+                Close
+              </button>
+            </div>
+          }
+
+          <!-- ============================================= -->
+          <!-- REMINDER POPUP -->
+          <!-- ============================================= -->
+
+          @if (reminderPopupNoteId === note.id) {
+            <div class="reminder-popup" (click)="$event.stopPropagation()">
+              <!-- REMINDER HEADER -->
+
+              <div class="reminder-popup-header">
+                <h3 class="reminder-popup-title">Reminder</h3>
+
+                <button
+                  type="button"
+                  class="reminder-close"
+                  title="Close"
+                  (click)="closeReminderPopup()"
+                >
+                  ×
+                </button>
+              </div>
+
+              <!-- EXISTING REMINDER -->
+
+              @if (hasReminder(note.id)) {
+                @let existingReminder = getFirstReminder(note.id);
+
+                @if (existingReminder) {
+                  <div class="existing-reminder">
+                    <div class="existing-reminder-icon">♧</div>
+
+                    <div class="existing-reminder-details">
+                      <span class="existing-reminder-label"> Reminder set for </span>
+
+                      <span class="existing-reminder-time">
+                        {{ existingReminder.reminderTime | date: 'MMM d, y, h:mm a' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              }
+
+              <!-- DATE -->
+
+              <div class="reminder-field">
+                <label for="reminder-date"> Date </label>
+
+                <input id="reminder-date" type="date" [(ngModel)]="reminderDate" />
+              </div>
+
+              <!-- TIME -->
+
+              <div class="reminder-field">
+                <label for="reminder-time"> Time </label>
+
+                <input id="reminder-time" type="time" [(ngModel)]="reminderTime" />
+              </div>
+
+              <!-- REMINDER ERROR -->
+
+              @if (reminderErrorMessage) {
+                <div class="reminder-error">
+                  {{ reminderErrorMessage }}
+                </div>
+              }
+
+              <!-- REMINDER ACTIONS -->
+
+              <div class="reminder-actions">
+                @if (hasReminder(note.id)) {
+                  @let existingReminder = getFirstReminder(note.id);
+
+                  @if (existingReminder) {
+                    <button
+                      type="button"
+                      class="reminder-delete"
+                      (click)="deleteReminder(existingReminder)"
+                      [disabled]="isSavingReminder"
+                    >
+                      Delete
+                    </button>
+                  }
+                }
+
+                <button
+                  type="button"
+                  class="reminder-cancel"
+                  (click)="closeReminderPopup()"
+                  [disabled]="isSavingReminder"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  class="reminder-save"
+                  (click)="saveReminder(note)"
+                  [disabled]="isSavingReminder"
+                >
+                  @if (isSavingReminder) {
+                    Saving...
+                  } @else {
+                    Save
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- ============================================= -->
           <!-- ARCHIVE ACTIONS -->
           <!-- ============================================= -->
 
@@ -218,15 +402,37 @@
               </span>
 
               <div class="card-actions">
-                <!-- Unarchive -->
+                <!-- Label -->
 
                 <button
                   type="button"
                   class="action-button"
-                  title="Unarchive"
+                  title="Label note"
+                  (click)="toggleLabelMenu(note, $event)"
+                >
+                  🏷
+                </button>
+
+                <!-- Reminder -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Reminder"
+                  (click)="openReminderPopup(note, $event)"
+                >
+                  ♧
+                </button>
+
+                <!-- Archive -->
+
+                <button
+                  type="button"
+                  class="action-button"
+                  title="Archive"
                   (click)="toggleArchive(note, $event)"
                 >
-                  📥
+                  🗃
                 </button>
 
                 <!-- Trash -->
@@ -289,7 +495,11 @@
 
   @if (!isLoading && notes.length === 0 && !isEditorOpen) {
     <div class="empty-state">
-      @if (currentView === 'notes') {
+      @if (selectedLabel) {
+        <div class="empty-icon">🏷</div>
+
+        <p>No notes with label "{{ selectedLabel.name }}"</p>
+      } @else if (currentView === 'notes') {
         <div class="empty-icon">♧</div>
 
         <p>Notes that you add appear here</p>

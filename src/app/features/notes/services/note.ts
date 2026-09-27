@@ -16,6 +16,12 @@ export class NoteService {
   private readonly apiUrl = `${environment.apiUrl}/api/notes`;
 
   // =========================================================
+  // REMINDER API URL
+  // =========================================================
+
+  private readonly reminderApiUrl = `${environment.apiUrl}/api/reminders`;
+
+  // =========================================================
   // LOCAL CACHE
   // =========================================================
 
@@ -285,6 +291,52 @@ export class NoteService {
   }
 
   // =========================================================
+  // REMINDERS
+  // =========================================================
+
+  // ---------------------------------------------------------
+  // CREATE REMINDER
+  //
+  // POST /api/reminders/notes/{noteId}
+  // ---------------------------------------------------------
+
+  createReminder(noteId: number, reminderTime: string): Observable<any> {
+    return this.http.post<any>(`${this.reminderApiUrl}/notes/${noteId}`, {
+      reminderTime,
+    });
+  }
+
+  // ---------------------------------------------------------
+  // GET ALL REMINDERS
+  //
+  // GET /api/reminders
+  // ---------------------------------------------------------
+
+  getReminders(): Observable<any[]> {
+    return this.http.get<any[]>(this.reminderApiUrl);
+  }
+
+  // ---------------------------------------------------------
+  // GET SINGLE REMINDER
+  //
+  // GET /api/reminders/{reminderId}
+  // ---------------------------------------------------------
+
+  getReminder(reminderId: number): Observable<any> {
+    return this.http.get<any>(`${this.reminderApiUrl}/${reminderId}`);
+  }
+
+  // ---------------------------------------------------------
+  // DELETE REMINDER
+  //
+  // DELETE /api/reminders/{reminderId}
+  // ---------------------------------------------------------
+
+  deleteReminder(reminderId: number): Observable<void> {
+    return this.http.delete<void>(`${this.reminderApiUrl}/${reminderId}`);
+  }
+
+  // =========================================================
   // PRIVATE CACHE UPDATE
   // =========================================================
 
@@ -301,7 +353,4 @@ export class NoteService {
       this.notesCache.next([updatedNote, ...current]);
     }
   }
-
-
-  
 }

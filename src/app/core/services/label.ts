@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 import { LabelRequest, LabelResponse } from '../models/label.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LabelService {
-  private readonly apiUrl = 'http://localhost:8080/api/labels';
+  private readonly apiUrl = `${environment.apiUrl}/api/labels`;
+  private readonly notesApiUrl = `${environment.apiUrl}/api/notes`;
 
   private readonly labelsSubject = new BehaviorSubject<LabelResponse[]>([]);
 
@@ -97,7 +99,7 @@ export class LabelService {
   // =========================================================
 
   addLabelToNote(noteId: number, labelId: number): Observable<any> {
-    return this.http.post(`http://localhost:8080/api/notes/${noteId}/labels/${labelId}`, {});
+    return this.http.post(`${this.notesApiUrl}/${noteId}/labels/${labelId}`, {});
   }
 
   // =========================================================
@@ -105,6 +107,6 @@ export class LabelService {
   // =========================================================
 
   removeLabelFromNote(noteId: number, labelId: number): Observable<void> {
-    return this.http.delete<void>(`http://localhost:8080/api/notes/${noteId}/labels/${labelId}`);
+    return this.http.delete<void>(`${this.notesApiUrl}/${noteId}/labels/${labelId}`);
   }
 }

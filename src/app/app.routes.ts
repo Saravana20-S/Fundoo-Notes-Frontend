@@ -9,6 +9,8 @@ import { NoteList } from './features/notes/note-list/note-list';
 
 import { authGuard } from './core/guards/auth.guard';
 
+import { ReminderList } from './features/reminders/reminder-list/reminder-list';
+
 export const routes: Routes = [
   {
     path: '',
@@ -66,6 +68,10 @@ export const routes: Routes = [
       {
         path: 'label/:labelId',
         component: NoteList,
+      },
+      {
+        path: 'reminders',
+        component: ReminderList,
       },
     ],
   },

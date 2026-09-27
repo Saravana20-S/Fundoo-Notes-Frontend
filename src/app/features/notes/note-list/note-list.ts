@@ -1,18 +1,26 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { CommonModule, DatePipe } from '@angular/common';
-
 import { FormsModule } from '@angular/forms';
-
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { NoteService } from '../services/note';
 
 import { NoteRequest, NoteResponse } from '../../../core/models/note.model';
 
+import { LabelService } from '../../../core/services/label';
+
+import { LabelResponse } from '../../../core/models/label.model';
+
 import { Subscription } from 'rxjs';
 
 import { NoteListService } from '../../../core/services/note-list';
+
+// ================= REMINDER =================
+import { ReminderService } from '../../../core/services/reminder';
+
+import { ReminderRequest, ReminderResponse } from '../../../core/models/reminder.model';
+// =============================================
 
 @Component({
   selector: 'app-note-list',
@@ -23,59 +31,86 @@ import { NoteListService } from '../../../core/services/note-list';
 })
 export class NoteList implements OnInit, OnDestroy {
   private readonly noteService = inject(NoteService);
-
+  private readonly labelService = inject(LabelService);
   private readonly route = inject(ActivatedRoute);
-
   private readonly router = inject(Router);
-
-  // Shared note list/search service
   private readonly noteListService = inject(NoteListService);
-
-  // Change detection
   private readonly cdr = inject(ChangeDetectorRef);
 
-  // Subscription for shared notes
-  private notesSubscription?: Subscription;
+  // ================= REMINDER =================
 
-  // =========================================================
-  // NOTES
-  // =========================================================
+  private readonly reminderService = inject(ReminderService);
+
+  private reminderSubscription?: Subscription;
+
+  reminders: ReminderResponse[] = [];
+
+  /**
+   * Stores the note for which reminder popup is currently open.
+   */
+  reminderPopupNoteId: number | null = null;
+
+  /**
+   * Date selected in reminder popup.
+   * Format:
+   * yyyy-MM-dd
+   */
+  reminderDate = '';
+
+  /**
+   * Time selected in reminder popup.
+   * Format:
+   * HH:mm
+   */
+  reminderTime = '';
+
+  isSavingReminder = false;
+
+  reminderErrorMessage = '';
+
+  // =============================================
+
+  private notesSubscription?: Subscription;
+  private labelsSubscription?: Subscription;
 
   notes: NoteResponse[] = [];
+  labels: LabelResponse[] = [];
 
-  // =========================================================
-  // PAGE STATE
-  // =========================================================
+  selectedLabel: LabelResponse | null = null;
+  selectedLabelId: number | null = null;
+
+  openLabelNoteId: number | null = null;
+  labelSearchText = '';
 
   isLoading = false;
-
   isSaving = false;
-
   errorMessage = '';
 
-  // =========================================================
-  // EDITOR
-  // =========================================================
-
   isEditorOpen = false;
-
   editingNoteId: number | null = null;
 
   title = '';
-
   content = '';
-
-  // =========================================================
-  // CURRENT VIEW
-  // =========================================================
 
   currentView: 'notes' | 'archive' | 'trash' = 'notes';
 
   // =========================================================
-  // INITIALIZATION
+  // INIT
   // =========================================================
 
   ngOnInit(): void {
+    this.labelsSubscription = this.labelService.labels$.subscribe((labels) => {
+      this.labels = labels ?? [];
+    });
+
+    this.labelService.getLabels().subscribe({
+      next: () => {},
+
+      error: (error) => {
+        console.error('Unable to load labels:', error);
+      },
+    });
+
     this.notesSubscription = this.noteListService.notes$.subscribe((notes) => {
       console.log('NOTE LIST RECEIVED LENGTH:', notes.length);
 
@@ -84,35 +119,434 @@ export class NoteList implements OnInit, OnDestroy {
         notes.map((note) => note.title),
       );
 
-      this.notes = notes;
+      this.notes = this.applySelectedLabelFilter(notes);
 
       console.log(
-        'THIS.NOTES AFTER ASSIGN:',
+        'THIS.NOTES AFTER LABEL FILTER:',
         this.notes.map((note) => note.title),
       );
 
-      // Force UI update after search result is received
       this.cdr.detectChanges();
     });
+
+    // ================= REMINDER =================
+
+    this.loadReminders();
+
+    // =============================================
 
     this.route.url.subscribe((segments) => {
       const path = segments.map((segment) => segment.path);
 
       if (path.includes('archive')) {
         this.currentView = 'archive';
-      } else if (path.includes('trash')) {
-        this.currentView = 'trash';
-      } else {
-        this.currentView = 'notes';
+
+        this.clearSelectedLabel();
+
+        this.noteListService.setCurrentView(this.currentView);
+
+        this.noteListService.loadNotes();
+
+        return;
       }
 
+      if (path.includes('trash')) {
+        this.currentView = 'trash';
+
+        this.clearSelectedLabel();
+
+        this.noteListService.setCurrentView(this.currentView);
+
+        this.noteListService.loadNotes();
+
+        return;
+      }
+
+      if (path.length >= 2 && path[0] === 'label') {
+        const labelId = Number(path[1]);
+
+        if (!Number.isNaN(labelId)) {
+          this.currentView = 'notes';
+
+          this.loadSelectedLabel(labelId);
+
+          return;
+        }
+      }
+
+      this.currentView = 'notes';
+
+      this.clearSelectedLabel();
+
       this.noteListService.setCurrentView(this.currentView);
+
       this.noteListService.loadNotes();
     });
   }
 
   // =========================================================
-  // LOAD NOTES
+  // REMINDER
+  // =========================================================
+
+  /**
+   * Load all reminders from backend.
+   */
+  private loadReminders(): void {
+    this.reminderSubscription = this.reminderService.getReminders().subscribe({
+      next: (reminders) => {
+        this.reminders = reminders ?? [];
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Unable to load reminders:', error);
+      },
+    });
+  }
+
+  /**
+   * Get reminders belonging to a particular note.
+   *
+   * Reminders are sorted by reminder time.
+   */
+  getRemindersForNote(noteId: number): ReminderResponse[] {
+    return this.reminders
+      .filter((reminder) => reminder.noteId === noteId)
+      .sort((a, b) => new Date(a.reminderTime).getTime() - new Date(b.reminderTime).getTime());
+  }
+
+  /**
+   * Check whether a note has at least one reminder.
+   */
+  hasReminder(noteId: number): boolean {
+    return this.reminders.some((reminder) => reminder.noteId === noteId);
+  }
+
+  /**
+   * Get the first reminder for a note.
+   *
+   * Since reminders are sorted by time,
+   * this returns the nearest reminder.
+   */
+  getFirstReminder(noteId: number): ReminderResponse | null {
+    const noteReminders = this.getRemindersForNote(noteId);
+
+    return noteReminders.length > 0 ? noteReminders[0] : null;
+  }
+
+  /**
+   * Open reminder popup for a note.
+   *
+   * If the note already has a reminder,
+   * the existing reminder time is loaded.
+   */
+  openReminderPopup(note: NoteResponse, event?: Event): void {
+    event?.stopPropagation();
+
+    // Clicking reminder icon again closes popup.
+    if (this.reminderPopupNoteId === note.id) {
+      this.closeReminderPopup();
+
+      return;
+    }
+
+    this.reminderPopupNoteId = note.id;
+
+    this.reminderErrorMessage = '';
+
+    const existingReminder = this.getFirstReminder(note.id);
+
+    if (existingReminder) {
+      const date = new Date(existingReminder.reminderTime);
+
+      this.reminderDate = this.formatDateForInput(date);
+
+      this.reminderTime = this.formatTimeForInput(date);
+    } else {
+      /**
+       * Default reminder:
+       * 30 minutes from now.
+       */
+      const defaultDate = new Date();
+
+      defaultDate.setMinutes(defaultDate.getMinutes() + 30);
+
+      this.reminderDate = this.formatDateForInput(defaultDate);
+
+      this.reminderTime = this.formatTimeForInput(defaultDate);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Close reminder popup.
+   */
+  closeReminderPopup(): void {
+    this.reminderPopupNoteId = null;
+
+    this.reminderDate = '';
+
+    this.reminderTime = '';
+
+    this.reminderErrorMessage = '';
+
+    this.isSavingReminder = false;
+  }
+
+  /**
+   * Quick option:
+   * One hour from now.
+   */
+  setReminderLaterToday(): void {
+    const date = new Date();
+
+    date.setHours(date.getHours() + 1);
+
+    this.reminderDate = this.formatDateForInput(date);
+
+    this.reminderTime = this.formatTimeForInput(date);
+  }
+
+  /**
+   * Quick option:
+   * Tomorrow at 8:00 AM.
+   */
+  setReminderTomorrow(): void {
+    const date = new Date();
+
+    date.setDate(date.getDate() + 1);
+
+    date.setHours(8, 0, 0, 0);
+
+    this.reminderDate = this.formatDateForInput(date);
+
+    this.reminderTime = this.formatTimeForInput(date);
+  }
+
+  /**
+   * Quick option:
+   * One week from now at 8:00 AM.
+   */
+  setReminderNextWeek(): void {
+    const date = new Date();
+
+    date.setDate(date.getDate() + 7);
+
+    date.setHours(8, 0, 0, 0);
+
+    this.reminderDate = this.formatDateForInput(date);
+
+    this.reminderTime = this.formatTimeForInput(date);
+  }
+
+  /**
+   * Create a reminder for the selected note.
+   */
+  saveReminder(note: NoteResponse, event?: Event): void {
+    event?.stopPropagation();
+
+    // Validate date.
+    if (!this.reminderDate) {
+      this.reminderErrorMessage = 'Please select a date.';
+
+      return;
+    }
+
+    // Validate time.
+    if (!this.reminderTime) {
+      this.reminderErrorMessage = 'Please select a time.';
+
+      return;
+    }
+
+    /**
+     * Backend expects:
+     *
+     * 2026-09-07T08:00:00
+     */
+    const reminderDateTime = `${this.reminderDate}T${this.reminderTime}`;
+
+    const selectedDate = new Date(reminderDateTime);
+
+    // Validate date/time.
+    if (Number.isNaN(selectedDate.getTime())) {
+      this.reminderErrorMessage = 'Please select a valid date and time.';
+
+      return;
+    }
+
+    // Reminder must be in future.
+    if (selectedDate.getTime() <= Date.now()) {
+      this.reminderErrorMessage = 'Please select a future date and time.';
+
+      return;
+    }
+
+    // Prevent double click.
+    if (this.isSavingReminder) {
+      return;
+    }
+
+    const request: ReminderRequest = {
+      reminderTime: reminderDateTime,
+    };
+
+    this.isSavingReminder = true;
+
+    this.reminderErrorMessage = '';
+
+    this.reminderService.createReminder(note.id, request).subscribe({
+      next: (createdReminder) => {
+        this.reminders = [...this.reminders, createdReminder];
+
+        this.isSavingReminder = false;
+
+        this.closeReminderPopup();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Unable to create reminder:', error);
+
+        this.isSavingReminder = false;
+
+        this.reminderErrorMessage = 'Unable to create reminder. Please try again.';
+      },
+    });
+  }
+
+  /**
+   * Delete an existing reminder.
+   */
+  deleteReminder(reminder: ReminderResponse, event?: Event): void {
+    event?.stopPropagation();
+
+    const confirmed = window.confirm('Delete this reminder?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.reminderService.deleteReminder(reminder.id).subscribe({
+      next: () => {
+        this.reminders = this.reminders.filter((item) => item.id !== reminder.id);
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Unable to delete reminder:', error);
+
+        this.reminderErrorMessage = 'Unable to delete reminder.';
+      },
+    });
+  }
+
+  /**
+   * Convert Date to:
+   * yyyy-MM-dd
+   *
+   * Required by input[type="date"].
+   */
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Convert Date to:
+   * HH:mm
+   *
+   * Required by input[type="time"].
+   */
+  private formatTimeForInput(date: Date): string {
+    const hours = String(date.getHours()).padStart(2, '0');
+
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+  }
+
+  // =========================================================
+  // EXISTING LABEL LOGIC
+  // =========================================================
+
+  private loadSelectedLabel(labelId: number): void {
+    this.selectedLabelId = labelId;
+
+    const cachedLabel = this.labelService.getCachedLabels().find((label) => label.id === labelId);
+
+    if (cachedLabel) {
+      this.selectedLabel = cachedLabel;
+
+      this.noteListService.setCurrentView(this.currentView);
+
+      this.noteListService.loadNotes();
+
+      return;
+    }
+
+    this.labelService.getLabel(labelId).subscribe({
+      next: (label) => {
+        this.selectedLabel = label;
+
+        this.noteListService.setCurrentView(this.currentView);
+
+        this.noteListService.loadNotes();
+      },
+
+      error: (error) => {
+        console.error('Unable to load selected label:', error);
+
+        this.selectedLabel = null;
+
+        this.noteListService.setCurrentView(this.currentView);
+
+        this.noteListService.loadNotes();
+      },
+    });
+  }
+
+  private clearSelectedLabel(): void {
+    this.selectedLabel = null;
+
+    this.selectedLabelId = null;
+
+    this.openLabelNoteId = null;
+
+    this.labelSearchText = '';
+  }
+
+  private applySelectedLabelFilter(notes: NoteResponse[]): NoteResponse[] {
+    if (this.selectedLabelId === null) {
+      return notes;
+    }
+
+    return notes.filter((note) =>
+      (note.labels ?? []).some((label) => label.id === this.selectedLabelId),
+    );
+  }
+
+  get filteredLabels(): LabelResponse[] {
+    const search = this.labelSearchText.trim().toLowerCase();
+
+    if (!search) {
+      return this.labels;
+    }
+
+    return this.labels.filter((label) => label.name.toLowerCase().includes(search));
+  }
+
+  // =========================================================
+  // EXISTING NOTE LOADING
   // =========================================================
 
   loadNotes(): void {
@@ -123,7 +557,7 @@ export class NoteList implements OnInit, OnDestroy {
     if (this.currentView === 'trash') {
       this.noteService.getTrashNotes().subscribe({
         next: (notes) => {
-          this.notes = notes ?? [];
+          this.notes = this.applySelectedLabelFilter(notes ?? []);
 
           this.isLoading = false;
         },
@@ -150,6 +584,8 @@ export class NoteList implements OnInit, OnDestroy {
           this.notes = allNotes.filter((note) => !note.archived && !note.trashed);
         }
 
+        this.notes = this.applySelectedLabelFilter(this.notes);
+
         this.sortNotes();
 
         this.isLoading = false;
@@ -165,14 +601,8 @@ export class NoteList implements OnInit, OnDestroy {
     });
   }
 
-  // =========================================================
-  // SORT
-  // =========================================================
-
   private sortNotes(): void {
     this.notes.sort((a, b) => {
-      // Pinned notes first
-
       if (a.pinned && !b.pinned) {
         return -1;
       }
@@ -180,8 +610,6 @@ export class NoteList implements OnInit, OnDestroy {
       if (!a.pinned && b.pinned) {
         return 1;
       }
-
-      // Then latest updated note
 
       const dateA = new Date(a.updatedDate).getTime();
 
@@ -192,7 +620,7 @@ export class NoteList implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // OPEN CREATE EDITOR
+  // EXISTING EDITOR
   // =========================================================
 
   openEditor(): void {
@@ -206,10 +634,6 @@ export class NoteList implements OnInit, OnDestroy {
 
     this.isEditorOpen = true;
   }
-
-  // =========================================================
-  // OPEN EXISTING NOTE
-  // =========================================================
 
   openNote(note: NoteResponse): void {
     if (this.currentView === 'trash') {
@@ -227,10 +651,6 @@ export class NoteList implements OnInit, OnDestroy {
     this.isEditorOpen = true;
   }
 
-  // =========================================================
-  // CLOSE EDITOR / OUTSIDE CLICK
-  // =========================================================
-
   handleOutsideClick(): void {
     if (this.isSaving) {
       return;
@@ -239,19 +659,10 @@ export class NoteList implements OnInit, OnDestroy {
     this.saveNote();
   }
 
-  // =========================================================
-  // SAVE NOTE
-  // CREATE OR UPDATE
-  // =========================================================
-
   saveNote(): void {
     const trimmedTitle = this.title.trim();
 
     const trimmedContent = this.content.trim();
-
-    // =========================================================
-    // EMPTY NOTE
-    // =========================================================
 
     if (!trimmedTitle && !trimmedContent) {
       this.closeEditor();
@@ -265,20 +676,13 @@ export class NoteList implements OnInit, OnDestroy {
 
     const request: NoteRequest = {
       title: trimmedTitle,
-
       content: trimmedContent,
     };
-
-    // =========================================================
-    // UPDATE EXISTING NOTE
-    // =========================================================
 
     if (this.editingNoteId !== null) {
       this.isSaving = true;
 
       const noteId = this.editingNoteId;
-
-      const originalNote = this.notes.find((note) => note.id === noteId);
 
       this.noteService.updateNote(noteId, request).subscribe({
         next: (updatedNote) => {
@@ -303,18 +707,9 @@ export class NoteList implements OnInit, OnDestroy {
       return;
     }
 
-    // =========================================================
-    // CREATE NEW NOTE
-    // =========================================================
-
-    /*
-     * Temporary ID.
-     *
-     * Negative numbers are used so they cannot normally
-     * conflict with a real database ID.
-     */
-
     const temporaryId = -Date.now();
+
+    const temporaryLabels = this.selectedLabel ? [this.selectedLabel] : [];
 
     const temporaryNote: NoteResponse = {
       id: temporaryId,
@@ -333,48 +728,58 @@ export class NoteList implements OnInit, OnDestroy {
 
       updatedDate: new Date().toISOString(),
 
-      labels: [],
+      labels: temporaryLabels,
     };
 
-    // =========================================================
-    // SHOW IMMEDIATELY
-    // =========================================================
-
     this.notes = [temporaryNote, ...this.notes];
-
-    // Add to cache immediately
 
     const cachedNotes = this.noteService.getCachedNotes();
 
     this.noteService.setCachedNotes([temporaryNote, ...cachedNotes]);
 
-    // Close editor immediately
-
     this.closeEditor();
-
-    // =========================================================
-    // BACKEND REQUEST
-    // =========================================================
 
     this.noteService.createNote(request).subscribe({
       next: (createdNote) => {
-        // Replace temporary note with real note
+        let finalNote = createdNote;
 
-        this.notes = this.notes.map((note) => (note.id === temporaryId ? createdNote : note));
+        if (this.selectedLabel) {
+          const label = this.selectedLabel;
 
-        const currentCache = this.noteService.getCachedNotes();
+          const alreadyHasLabel = (createdNote.labels ?? []).some((item) => item.id === label.id);
 
-        this.noteService.setCachedNotes(
-          currentCache.map((note) => (note.id === temporaryId ? createdNote : note)),
-        );
+          if (!alreadyHasLabel) {
+            this.labelService.addLabelToNote(createdNote.id, label.id).subscribe({
+              next: () => {
+                finalNote = {
+                  ...createdNote,
 
-        this.sortNotes();
+                  labels: [...(createdNote.labels ?? []), label],
+                };
+
+                this.replaceCreatedNote(temporaryId, finalNote);
+              },
+
+              error: (error) => {
+                console.error('Unable to add label to created note:', error);
+
+                this.replaceCreatedNote(temporaryId, createdNote);
+
+                this.errorMessage = 'Note created, but unable to add label.';
+              },
+            });
+
+            return;
+          }
+
+          finalNote = createdNote;
+        }
+
+        this.replaceCreatedNote(temporaryId, finalNote);
       },
 
       error: (error) => {
         console.error('Unable to create note:', error);
-
-        // Rollback
 
         this.notes = this.notes.filter((note) => note.id !== temporaryId);
 
@@ -387,9 +792,19 @@ export class NoteList implements OnInit, OnDestroy {
     });
   }
 
-  // =========================================================
-  // CLOSE EDITOR
-  // =========================================================
+  private replaceCreatedNote(temporaryId: number, createdNote: NoteResponse): void {
+    this.notes = this.notes.map((note) => (note.id === temporaryId ? createdNote : note));
+
+    const currentCache = this.noteService.getCachedNotes();
+
+    this.noteService.setCachedNotes(
+      currentCache.map((note) => (note.id === temporaryId ? createdNote : note)),
+    );
+
+    this.notes = this.applySelectedLabelFilter(this.notes);
+
+    this.sortNotes();
+  }
 
   closeEditor(): void {
     this.isEditorOpen = false;
@@ -402,7 +817,115 @@ export class NoteList implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // PIN / UNPIN
+  // EXISTING LABEL LOGIC
+  // =========================================================
+
+  toggleLabelMenu(note: NoteResponse, event?: Event): void {
+    event?.stopPropagation();
+
+    if (this.openLabelNoteId === note.id) {
+      this.closeLabelMenu();
+
+      return;
+    }
+
+    this.openLabelNoteId = note.id;
+
+    this.labelSearchText = '';
+
+    this.labelService.getLabels().subscribe({
+      next: () => {},
+
+      error: (error) => {
+        console.error('Unable to load labels:', error);
+      },
+    });
+  }
+
+  closeLabelMenu(): void {
+    this.openLabelNoteId = null;
+
+    this.labelSearchText = '';
+  }
+
+  hasLabel(note: NoteResponse, labelId: number): boolean {
+    return (note.labels ?? []).some((label) => label.id === labelId);
+  }
+
+  toggleLabel(note: NoteResponse, label: LabelResponse, event: Event): void {
+    event.stopPropagation();
+
+    const input = event.target as HTMLInputElement;
+
+    const checked = input.checked;
+
+    const oldLabels = [...(note.labels ?? [])];
+
+    let updatedLabels: LabelResponse[];
+
+    if (checked) {
+      const alreadyExists = oldLabels.some((item) => item.id === label.id);
+
+      if (alreadyExists) {
+        return;
+      }
+
+      updatedLabels = [...oldLabels, label];
+    } else {
+      updatedLabels = oldLabels.filter((item) => item.id !== label.id);
+    }
+
+    const updatedNote: NoteResponse = {
+      ...note,
+      labels: updatedLabels,
+    };
+
+    this.updateNoteLabelsLocally(note.id, updatedNote);
+
+    const request$ = checked
+      ? this.labelService.addLabelToNote(note.id, label.id)
+      : this.labelService.removeLabelFromNote(note.id, label.id);
+
+    request$.subscribe({
+      next: () => {
+        console.log(checked ? 'Label added successfully.' : 'Label removed successfully.');
+
+        if (!checked && this.selectedLabelId === label.id) {
+          this.notes = this.applySelectedLabelFilter(this.notes);
+        }
+      },
+
+      error: (error) => {
+        console.error(checked ? 'Unable to add label:' : 'Unable to remove label:', error);
+
+        const rollbackNote: NoteResponse = {
+          ...note,
+          labels: oldLabels,
+        };
+
+        this.updateNoteLabelsLocally(note.id, rollbackNote);
+
+        this.errorMessage = checked ? 'Unable to add label.' : 'Unable to remove label.';
+      },
+    });
+  }
+
+  private updateNoteLabelsLocally(noteId: number, updatedNote: NoteResponse): void {
+    this.notes = this.notes.map((note) => (note.id === noteId ? updatedNote : note));
+
+    const cachedNotes = this.noteService.getCachedNotes();
+
+    this.noteService.setCachedNotes(
+      cachedNotes.map((note) => (note.id === noteId ? updatedNote : note)),
+    );
+
+    this.notes = this.applySelectedLabelFilter(this.notes);
+
+    this.cdr.detectChanges();
+  }
+
+  // =========================================================
+  // EXISTING PIN LOGIC
   // =========================================================
 
   togglePin(note: NoteResponse, event?: Event): void {
@@ -414,17 +937,10 @@ export class NoteList implements OnInit, OnDestroy {
 
     const newPinnedState = !note.pinned;
 
-    // =========================================================
-    // OPTIMISTIC UI UPDATE
-    // =========================================================
-
     const updatedNote: NoteResponse = {
       ...note,
-
       pinned: newPinnedState,
     };
-
-    // Update cache immediately
 
     const cachedNotes = this.noteService.getCachedNotes();
 
@@ -432,17 +948,9 @@ export class NoteList implements OnInit, OnDestroy {
       cachedNotes.map((item) => (item.id === note.id ? updatedNote : item)),
     );
 
-    // Update current page immediately
-
     this.notes = this.notes.map((item) => (item.id === note.id ? updatedNote : item));
 
-    // Pinned notes should immediately move to top
-
     this.sortNotes();
-
-    // =========================================================
-    // BACKEND REQUEST
-    // =========================================================
 
     const request$ = newPinnedState
       ? this.noteService.pinNote(note.id)
@@ -450,8 +958,6 @@ export class NoteList implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: (serverNote) => {
-        // Replace optimistic version with real response
-
         const currentCache = this.noteService.getCachedNotes();
 
         this.noteService.setCachedNotes(
@@ -465,8 +971,6 @@ export class NoteList implements OnInit, OnDestroy {
 
       error: (error) => {
         console.error('Pin/Unpin failed:', error);
-
-        // Rollback
 
         const currentCache = this.noteService.getCachedNotes();
 
@@ -484,7 +988,7 @@ export class NoteList implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // ARCHIVE / UNARCHIVE
+  // EXISTING ARCHIVE LOGIC
   // =========================================================
 
   toggleArchive(note: NoteResponse, event?: Event): void {
@@ -492,28 +996,14 @@ export class NoteList implements OnInit, OnDestroy {
 
     const wasArchived = note.archived;
 
-    /*
-     * Save the original note.
-     * If backend fails, we can restore it.
-     */
-
     const originalNote = {
       ...note,
     };
 
-    // =======================================================
-    // OPTIMISTIC UI
-    // =======================================================
-
     const updatedNote: NoteResponse = {
       ...note,
-
       archived: !wasArchived,
     };
-
-    /*
-     * Update local cache immediately.
-     */
 
     const currentNotes = this.noteService.getCachedNotes();
 
@@ -521,15 +1011,7 @@ export class NoteList implements OnInit, OnDestroy {
       currentNotes.map((item) => (item.id === note.id ? updatedNote : item)),
     );
 
-    /*
-     * Remove from the current page immediately.
-     */
-
     this.notes = this.notes.filter((item) => item.id !== note.id);
-
-    // =======================================================
-    // BACKEND REQUEST
-    // =======================================================
 
     const request$ = wasArchived
       ? this.noteService.unarchiveNote(note.id)
@@ -537,10 +1019,6 @@ export class NoteList implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: (serverNote) => {
-        /*
-         * Replace cache with actual backend response.
-         */
-
         const cached = this.noteService.getCachedNotes();
 
         this.noteService.setCachedNotes(
@@ -551,19 +1029,11 @@ export class NoteList implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Archive operation failed:', error);
 
-        /*
-         * ROLLBACK
-         */
-
         const cached = this.noteService.getCachedNotes();
 
         this.noteService.setCachedNotes(
           cached.map((item) => (item.id === originalNote.id ? originalNote : item)),
         );
-
-        /*
-         * Put note back into current page.
-         */
 
         if (this.currentView === 'notes' && !originalNote.archived && !originalNote.trashed) {
           this.notes = [originalNote, ...this.notes];
@@ -583,7 +1053,7 @@ export class NoteList implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // MOVE TO TRASH
+  // EXISTING TRASH LOGIC
   // =========================================================
 
   moveToTrash(note: NoteResponse, event?: Event): void {
@@ -599,19 +1069,10 @@ export class NoteList implements OnInit, OnDestroy {
       ...note,
     };
 
-    // =======================================================
-    // OPTIMISTIC UPDATE
-    // =======================================================
-
     const updatedNote: NoteResponse = {
       ...note,
-
       trashed: true,
     };
-
-    /*
-     * Update cache immediately.
-     */
 
     const currentNotes = this.noteService.getCachedNotes();
 
@@ -619,15 +1080,7 @@ export class NoteList implements OnInit, OnDestroy {
       currentNotes.map((item) => (item.id === note.id ? updatedNote : item)),
     );
 
-    /*
-     * Remove immediately from current page.
-     */
-
     this.notes = this.notes.filter((item) => item.id !== note.id);
-
-    // =======================================================
-    // BACKEND REQUEST
-    // =======================================================
 
     this.noteService.trashNote(note.id).subscribe({
       next: () => {
@@ -637,17 +1090,11 @@ export class NoteList implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Unable to move note to Trash:', error);
 
-        // Rollback
-
         const cached = this.noteService.getCachedNotes();
 
         this.noteService.setCachedNotes(
           cached.map((item) => (item.id === originalNote.id ? originalNote : item)),
         );
-
-        /*
-         * Put the note back.
-         */
 
         if (this.currentView !== 'trash') {
           this.notes = [originalNote, ...this.notes];
@@ -659,10 +1106,6 @@ export class NoteList implements OnInit, OnDestroy {
       },
     });
   }
-
-  // =========================================================
-  // RESTORE
-  // =========================================================
 
   restoreNote(note: NoteResponse, event?: Event): void {
     event?.stopPropagation();
@@ -679,10 +1122,6 @@ export class NoteList implements OnInit, OnDestroy {
       },
     });
   }
-
-  // =========================================================
-  // PERMANENT DELETE
-  // =========================================================
 
   permanentlyDelete(note: NoteResponse, event?: Event): void {
     event?.stopPropagation();
@@ -705,10 +1144,6 @@ export class NoteList implements OnInit, OnDestroy {
       },
     });
   }
-
-  // =========================================================
-  // DELETE NOTE
-  // =========================================================
 
   deleteNote(note: NoteResponse, event?: Event): void {
     event?.stopPropagation();
@@ -733,7 +1168,7 @@ export class NoteList implements OnInit, OnDestroy {
   }
 
   // =========================================================
-  // UPDATE NOTE IN LOCAL ARRAY
+  // EXISTING HELPER
   // =========================================================
 
   private updateNoteInList(updatedNote: NoteResponse): void {
@@ -750,5 +1185,13 @@ export class NoteList implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.notesSubscription?.unsubscribe();
+
+    this.labelsSubscription?.unsubscribe();
+
+    // ================= REMINDER =================
+
+    this.reminderSubscription?.unsubscribe();
+
+    // =============================================
   }
 }
